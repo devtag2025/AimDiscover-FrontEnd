@@ -1,0 +1,4 @@
+so the flow is like that first we add the the prompt that is the shortened description from the grok response and then we send the description in the payliad with "prompt" key and send it tothe meshy api
+In return we get a result ID as a response that we can use it to send to the meshy url to get all the data related to that particular ResultID 
+The response will have all the data that we needed but the most importaant data that we need is the "model_urls" key in the response payload .
+Then we will map the urls from the "models_url" json to the GLTF extension needed to render the model in the React Three Fibre.
