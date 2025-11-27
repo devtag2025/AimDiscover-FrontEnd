@@ -27,7 +27,9 @@ const router = useRouter();
 
     mutate(data, {
       onSuccess: () => {
-        window.location.href = "/dashboard";
+       setTimeout(() => {
+  router.replace("/dashboard");
+}, 150);
       },
       onError: (err) => {
         setLoginError(err?.response?.data?.message || "Login failed");
