@@ -242,3 +242,13 @@ export function LoginForm() {
     </div>
   );
 }
+
+export function LoginFormSkeleton() {
+  return (
+    <div className="relative z-10 bg-neutral-900/95 backdrop-blur-sm border-2 border-purple-500/20 max-w-6xl w-full p-8 rounded-2xl shadow-2xl shadow-purple-500/20">
+      <div className="flex items-center justify-center h-[600px]">
+        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    </div>
+  );
+}
