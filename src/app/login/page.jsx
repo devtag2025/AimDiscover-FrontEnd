@@ -1,3 +1,4 @@
+"use client"
 import LightRays from "@/components/ui/LightRays";
 import { LoginFormSkeleton } from "./LoginForm";
 import { Suspense } from "react";
