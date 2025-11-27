@@ -19,7 +19,6 @@ export function useRegister() {
   });
 }
 
-
 export function useLogin() {
   const { setAuth } = useAuthStore();
 
@@ -27,24 +26,23 @@ export function useLogin() {
     mutationFn: AuthService.login,
 
     onSuccess: (response) => {
-      const { accessToken, message } = response;
-
-  
-      if (accessToken) {
-        localStorage.setItem("accessToken", accessToken);
-      }
-
- 
+      const { message } = handleResponse(response);
       setAuth(true);
+      const data = response?.data || response;
+      const accessToken = data?.accessToken;
 
+      if (accessToken) {
+        localStorage.setItem("token", accessToken);
+      }
       toast.success(message || "Login successful!");
 
       return response;
     },
 
     onError: (error) => {
-      const msg = error?.response?.data?.message || "Login failed";
-      toast.error(msg);
+      const message = handleError(error);
+      toast.error(message || "Login failed.");
+      console.error("Login failed:", message);
       throw error;
     },
   });
@@ -81,7 +79,6 @@ export function useResetPassword() {
   });
 }
 
-
 export function useGoogleAuth() {
   const { setAuth } = useAuthStore();
 
@@ -91,7 +88,7 @@ export function useGoogleAuth() {
     },
 
     onSuccess: () => {
-      setAuth(true)
+      setAuth(true);
       toast.success("Redirecting to Google...");
     },
 
