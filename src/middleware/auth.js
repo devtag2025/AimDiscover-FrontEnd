@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export function authMiddleware(req) {
-  const token = req.cookies.get("accessToken")?.value; // read from cookies
+  const token = localStorage.getItem("token")
 
   const protectedRoutes = ["/dashboard", "/profile", "/settings"];
   const isProtected = protectedRoutes.some((path) =>
