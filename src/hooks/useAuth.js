@@ -26,20 +26,20 @@ export function useLogin() {
     mutationFn: AuthService.login,
 
     onSuccess: (response) => {
-      const { data, message } = handleResponse(response);
-      const token = data?.accessToken;
-
-      if (token) {
-        localStorage.setItem("token", token);
-      }
+      const { message } = handleResponse(response);
+      
+      // ✅ Cookie is already set by backend, no need for localStorage
       setAuth(true);
       toast.success(message || "Login successful!");
+      
+      return response;
     },
 
     onError: (error) => {
       const message = handleError(error);
       toast.error(message || "Login failed.");
       console.error("Login failed:", message);
+      throw error;
     },
   });
 }
