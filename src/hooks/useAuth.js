@@ -19,33 +19,32 @@ export function useRegister() {
   });
 }
 
+
 export function useLogin() {
   const { setAuth } = useAuthStore();
 
   return useMutation({
     mutationFn: AuthService.login,
 
- onSuccess: (response) => {
-      const { message, accessToken, refreshToken } = handleResponse(response);
-      
+    onSuccess: (response) => {
+      const { accessToken, message } = response;
+
+  
       if (accessToken) {
-        document.cookie = `accessToken=${accessToken}; path=/; max-age=${24*60*60}; secure; samesite=lax`;
+        localStorage.setItem("accessToken", accessToken);
       }
-      
-      if (refreshToken) {
-        document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${7*24*60*60}; secure; samesite=lax`;
-      }
-      
+
+ 
       setAuth(true);
+
       toast.success(message || "Login successful!");
-      
+
       return response;
     },
 
     onError: (error) => {
-      const message = handleError(error);
-      toast.error(message || "Login failed.");
-      console.error("Login failed:", message);
+      const msg = error?.response?.data?.message || "Login failed";
+      toast.error(msg);
       throw error;
     },
   });

@@ -24,7 +24,7 @@ import {
 import { useGetAnalytics } from "@/hooks/useGrok";
 import { formatDistanceToNow } from "date-fns";
 import SpikeTime from "@/components/dashboard/SparkTime";
-
+import { withAuth } from "@/components/common/withAuth";
 // --- CONSTANTS ---
 const COUNTRY_NAMES = {
   US: "United States",
@@ -621,4 +621,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default withAuth(Dashboard);

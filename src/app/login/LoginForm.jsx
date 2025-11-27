@@ -19,35 +19,20 @@ export function LoginForm() {
   const { mutate, isPending } = useLogin();
   const { mutate: googleAuth } = useGoogleAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState(null);
-  const router = useRouter();
+ const [loginError, setLoginError] = useState(null);
   const searchParams = useSearchParams();
 
-  
   const onSubmit = (data) => {
     setLoginError(null);
-    
+
     mutate(data, {
-      onSuccess: (response) => {
-        // ✅ Extract token from response
-        const accessToken = response?.data?.accessToken || response?.accessToken;
-        
-        if (accessToken) {
-          // ✅ Set cookie on client-side so middleware can read it
-          document.cookie = `accessToken=${accessToken}; path=/; max-age=${24*60*60}; secure; samesite=lax`;
-        }
-        
+      onSuccess: () => {
         const redirectUrl = searchParams.get("redirect") || "/dashboard";
-        console.log("✅ Login successful, redirecting to:", redirectUrl);
-        
-        // ✅ Small delay to ensure cookie is set, then redirect
-        setTimeout(() => {
-          window.location.replace(redirectUrl);
-        }, 100);
+        window.location.replace(redirectUrl);
       },
-      onError: (error) => {
-        setLoginError(error?.response?.data?.message || "Login failed");
-      },
+      onError: (err) => {
+        setLoginError(err?.response?.data?.message || "Login failed");
+      }
     });
   };
 
@@ -248,7 +233,6 @@ export function LoginForm() {
     </div>
   );
 }
-
 export function LoginFormSkeleton() {
   return (
     <div className="relative z-10 bg-neutral-900/95 backdrop-blur-sm border-2 border-purple-500/20 max-w-6xl w-full p-8 rounded-2xl shadow-2xl shadow-purple-500/20">
