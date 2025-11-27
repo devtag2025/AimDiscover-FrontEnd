@@ -27,8 +27,6 @@ export function useLogin() {
 
     onSuccess: (response) => {
       const { message } = handleResponse(response);
-      
-      // ✅ Cookie is already set by backend, no need for localStorage
       setAuth(true);
       toast.success(message || "Login successful!");
       

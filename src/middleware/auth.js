@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export function authMiddleware(req) {
   // ✅ Read token from cookies
   const token = req.cookies.get("accessToken")?.value;
-  
+  console.log("this is the token " ,token ,!!token)
   const { pathname } = req.nextUrl;
   
   // Define protected and auth routes
@@ -17,26 +17,14 @@ export function authMiddleware(req) {
   if (isProtectedRoute && !token) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(loginUrl);  // ✅ ADD THIS RETURN
   }
 
-  // ✅ If user IS logged in and trying to access auth routes (login/signup)
-  // Redirect them to dashboard instead
+  // ✅ If user IS logged in and trying to access auth routes
   if (isAuthRoute && token) {
     const redirectUrl = req.nextUrl.searchParams.get("redirect") || "/dashboard";
-    return NextResponse.redirect(new URL(redirectUrl, req.url));
+    return NextResponse.redirect(new URL(redirectUrl, req.url));  // ✅ ADD THIS RETURN
   }
 
   return NextResponse.next();
 }
-
-export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/profile/:path*", 
-    "/settings/:path*",
-    "/login",
-    "/signup",
-    "/forgot-password",
-  ],
-};

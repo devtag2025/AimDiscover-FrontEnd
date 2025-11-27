@@ -30,9 +30,7 @@ export function LoginForm() {
     mutate(data, {
       onSuccess: () => {
         const redirectUrl = searchParams.get("redirect") || "/dashboard";
-        
-        // ✅ Use window.location for a full page reload
-        // This ensures cookies are properly read by middleware
+        console.log("✅ Login successful, redirecting to:", redirectUrl);
         window.location.href = redirectUrl;
       },
       onError: (error) => {

@@ -5,5 +5,12 @@ export function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/settings/:path*"],
+  matcher: [
+    "/dashboard/:path*", 
+    "/profile/:path*", 
+    "/settings/:path*",
+    "/login",           // ✅ Add this
+    "/signup",          // ✅ Add this
+    "/forgot-password", // ✅ Add this
+  ],
 };
