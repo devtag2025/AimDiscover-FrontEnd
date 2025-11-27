@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export function middleware(req) {
+export function authMiddleware(req) {
   // ✅ Read token from cookies
   const token = req.cookies.get("accessToken")?.value;
   
