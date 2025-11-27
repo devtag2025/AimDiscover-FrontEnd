@@ -5,7 +5,7 @@ export function withAuth(PageComponent) {
   const AuthenticatedComponent = (props) => {
     
     useEffect(() => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         const current = window.location.pathname;

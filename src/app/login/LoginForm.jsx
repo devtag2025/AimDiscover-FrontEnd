@@ -26,16 +26,14 @@ const router = useRouter();
     setLoginError(null);
 
     mutate(data, {
-       onSuccess: () => {
-      const redirectUrl = searchParams.get("redirect") || "/dashboard";
-      router.push(redirectUrl); 
+      onSuccess: () => {
+        window.location.href = "/dashboard";
       },
       onError: (err) => {
         setLoginError(err?.response?.data?.message || "Login failed");
       }
     });
   };
-
   const handleGoogleAuth = () => {
     const redirectUrl = searchParams.get("redirect") || "/dashboard";
     googleAuth({ redirectUrl });

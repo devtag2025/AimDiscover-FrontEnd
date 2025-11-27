@@ -15,7 +15,6 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     try {
-      // ✅ If running in browser (not SSR)
       if (typeof window !== "undefined") {
         const token = localStorage.getItem("token");
 

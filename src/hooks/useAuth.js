@@ -26,14 +26,16 @@ export function useLogin() {
     mutationFn: AuthService.login,
 
     onSuccess: (response) => {
-      const { message } = handleResponse(response);
-      setAuth(true);
       const data = response?.data || response;
-      const accessToken = data?.accessToken;
-
+      const { message } = handleResponse(response);
+      console.log("This is the data" , data , )
+      const accessToken = data?.data?.accessToken;
+      console.log("This is the token",accessToken)
       if (accessToken) {
-        localStorage.setItem("token", accessToken);
+        localStorage.setItem("accessToken", accessToken);
       }
+
+      setAuth(true);
       toast.success(message || "Login successful!");
 
       return response;
