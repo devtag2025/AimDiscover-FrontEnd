@@ -15,7 +15,7 @@ export function LoginForm() {
     formState: { errors },
     reset,
   } = useForm();
-
+const router = useRouter();
   const { mutate, isPending } = useLogin();
   const { mutate: googleAuth } = useGoogleAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -26,9 +26,9 @@ export function LoginForm() {
     setLoginError(null);
 
     mutate(data, {
-      onSuccess: () => {
-        const redirectUrl = searchParams.get("redirect") || "/dashboard";
-        window.location.replace(redirectUrl);
+       onSuccess: () => {
+      const redirectUrl = searchParams.get("redirect") || "/dashboard";
+      router.push(redirectUrl); 
       },
       onError: (err) => {
         setLoginError(err?.response?.data?.message || "Login failed");
