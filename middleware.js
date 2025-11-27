@@ -1,4 +1,4 @@
-import { authMiddleware } from "./src/middleware/auth";
+import { authMiddleware } from "@/middleware/auth";
 
 export function middleware(req) {
   return authMiddleware(req);
