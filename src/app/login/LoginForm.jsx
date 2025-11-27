@@ -28,10 +28,22 @@ export function LoginForm() {
     setLoginError(null);
     
     mutate(data, {
-      onSuccess: () => {
+      onSuccess: (response) => {
+        // ✅ Extract token from response
+        const accessToken = response?.data?.accessToken || response?.accessToken;
+        
+        if (accessToken) {
+          // ✅ Set cookie on client-side so middleware can read it
+          document.cookie = `accessToken=${accessToken}; path=/; max-age=${24*60*60}; secure; samesite=lax`;
+        }
+        
         const redirectUrl = searchParams.get("redirect") || "/dashboard";
-        console.log("✅ Login successful, redirecting to:", redirectUrl); 
-        router.push(redirectUrl);   
+        console.log("✅ Login successful, redirecting to:", redirectUrl);
+        
+        // ✅ Small delay to ensure cookie is set, then redirect
+        setTimeout(() => {
+          window.location.replace(redirectUrl);
+        }, 100);
       },
       onError: (error) => {
         setLoginError(error?.response?.data?.message || "Login failed");

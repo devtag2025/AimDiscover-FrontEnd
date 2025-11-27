@@ -25,8 +25,17 @@ export function useLogin() {
   return useMutation({
     mutationFn: AuthService.login,
 
-    onSuccess: (response) => {
-      const { message } = handleResponse(response);
+ onSuccess: (response) => {
+      const { message, accessToken, refreshToken } = handleResponse(response);
+      
+      if (accessToken) {
+        document.cookie = `accessToken=${accessToken}; path=/; max-age=${24*60*60}; secure; samesite=lax`;
+      }
+      
+      if (refreshToken) {
+        document.cookie = `refreshToken=${refreshToken}; path=/; max-age=${7*24*60*60}; secure; samesite=lax`;
+      }
+      
       setAuth(true);
       toast.success(message || "Login successful!");
       
