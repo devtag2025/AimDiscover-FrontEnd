@@ -19,25 +19,32 @@ export function LoginForm() {
   const { mutate, isPending } = useLogin();
   const { mutate: googleAuth } = useGoogleAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState(null); // ✅ Add error state
+  const [loginError, setLoginError] = useState(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 
   
-   const onSubmit = (data) => {
+  const onSubmit = (data) => {
     setLoginError(null);
     
     mutate(data, {
       onSuccess: () => {
         const redirectUrl = searchParams.get("redirect") || "/dashboard";
         console.log("✅ Login successful, redirecting to:", redirectUrl);
-        window.location.href = redirectUrl;
+        
+        // ✅ FIX: Use router.push instead of window.location.href
+        // This works better with Next.js middleware
+        router.push(redirectUrl);
+        
+        // Alternative fix: Force a clean redirect without query params
+        // window.location.href = redirectUrl; // Remove this line
       },
       onError: (error) => {
         setLoginError(error?.response?.data?.message || "Login failed");
       },
     });
   };
+
   const handleGoogleAuth = () => {
     const redirectUrl = searchParams.get("redirect") || "/dashboard";
     googleAuth({ redirectUrl });
@@ -58,7 +65,6 @@ export function LoginForm() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-8">
-          {/* ✅ Show login error if any */}
           {loginError && (
             <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30">
               <p className="text-red-400 text-sm font-medium flex items-center gap-2">
@@ -232,16 +238,6 @@ export function LoginForm() {
           <h3 className="text-2xl font-bold mb-3">Welcome Back!</h3>
           <p className="text-neutral-300 text-sm">Continue your journey with us and access your personalized dashboard</p>
         </div>
-      </div>
-    </div>
-  );
-}
-
-export function LoginFormSkeleton() {
-  return (
-    <div className="relative z-10 bg-neutral-900/95 backdrop-blur-sm border-2 border-purple-500/20 max-w-6xl w-full p-8 rounded-2xl shadow-2xl shadow-purple-500/20">
-      <div className="flex items-center justify-center h-[600px]">
-        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     </div>
   );
