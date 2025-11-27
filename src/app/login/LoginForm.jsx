@@ -31,13 +31,7 @@ export function LoginForm() {
       onSuccess: () => {
         const redirectUrl = searchParams.get("redirect") || "/dashboard";
         console.log("✅ Login successful, redirecting to:", redirectUrl);
-        
-        // ✅ FIX: Use router.push instead of window.location.href
-        // This works better with Next.js middleware
-        router.push(redirectUrl);
-        
-        // Alternative fix: Force a clean redirect without query params
-        // window.location.href = redirectUrl; // Remove this line
+        window.location.replace(redirectUrl);
       },
       onError: (error) => {
         setLoginError(error?.response?.data?.message || "Login failed");
