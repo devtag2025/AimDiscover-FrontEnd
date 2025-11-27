@@ -30,8 +30,8 @@ export function LoginForm() {
     mutate(data, {
       onSuccess: () => {
         const redirectUrl = searchParams.get("redirect") || "/dashboard";
-        console.log("✅ Login successful, redirecting to:", redirectUrl);
-        window.location.replace(redirectUrl);
+        console.log("✅ Login successful, redirecting to:", redirectUrl); 
+        router.push(redirectUrl);   
       },
       onError: (error) => {
         setLoginError(error?.response?.data?.message || "Login failed");
