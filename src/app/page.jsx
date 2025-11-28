@@ -313,33 +313,28 @@ export default function Home() {
   return (
     <>
       {/* Floating Navigation */}
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex row gap-10">
-        <FloatingDock desktopClassName="dark" items={links} />
-        {isLogin ? (
-          <button
-            onClick={() => {
-              handleLogout(router);
-            }}
-            className="group px-4 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 transition-all duration-300 text-white text-base tracking-wider rounded-full flex items-center gap-3 shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 hover:scale-105"
-            aria-label="Logout"
-          >
-            Log Out
-          </button>
-        ):(
-          <button
-            onClick={() => {
-              router.push('/login') 
-            }}
-            className="group px-4 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 transition-all duration-300 text-white text-base tracking-wider rounded-full flex items-center gap-3 shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 hover:scale-105"
-            aria-label="Login"
-          >
-            Log In
-          </button>
-        )
-      
-      
-      }
-      </div>
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-10 w-full">
+  <FloatingDock desktopClassName="dark" items={links} />
+
+  {isLogin ? (
+    <button
+      onClick={() => handleLogout(router)}
+      className="group px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 transition-all duration-300 text-white text-base tracking-wider rounded-full flex items-center gap-3 shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 hover:scale-105"
+      aria-label="Logout"
+    >
+      Log Out
+    </button>
+  ) : (
+    <button
+      onClick={() => router.push('/login')}
+      className="group px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 transition-all duration-300 text-white text-base tracking-wider rounded-full flex items-center gap-3 shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 hover:scale-105"
+      aria-label="Login"
+    >
+      Log In
+    </button>
+  )}
+</div>
+
 
       {/* Smooth Scroll Wrapper */}
       <div id="smooth-wrapper" ref={smoothWrapperRef}>
