@@ -5,6 +5,7 @@ import Link from "next/link";
 import handleLogout from "@/utils/logout";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
+import Image from "next/image"; 
 import {
   LayoutDashboard,
   Search,
@@ -90,12 +91,7 @@ export default function DashboardLayout({ children }) {
           {/* Logo */}
           <div className="p-6 border-b border-white/10">
             <Link href="/dashboard" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-300 bg-clip-text text-transparent">
-                AimDiscovery
-              </span>
+              <Image src="/Logo.png" alt="login-image" width={200} height={200} cover className="object-cover opacity-80" priority />
             </Link>
           </div>
 
