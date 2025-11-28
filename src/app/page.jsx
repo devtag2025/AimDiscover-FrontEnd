@@ -315,7 +315,7 @@ export default function Home() {
       {/* Floating Navigation */}
       <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex row gap-10">
         <FloatingDock desktopClassName="dark" items={links} />
-        {isLogin && (
+        {isLogin ? (
           <button
             onClick={() => {
               handleLogout(router);
@@ -325,7 +325,20 @@ export default function Home() {
           >
             Log Out
           </button>
-        )}
+        ):(
+          <button
+            onClick={() => {
+              router.push('/login') 
+            }}
+            className="group px-4 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 transition-all duration-300 text-white text-base tracking-wider rounded-full flex items-center gap-3 shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 hover:scale-105"
+            aria-label="Login"
+          >
+            Log In
+          </button>
+        )
+      
+      
+      }
       </div>
 
       {/* Smooth Scroll Wrapper */}
@@ -369,7 +382,11 @@ export default function Home() {
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4">
-                    <button className="group w-full sm:w-auto px-8 py-4 inset-0 bg-gradient-to-b from-transparent border border-violet-500 via-black/40 to-black/80 hover:from-purple-700 hover:to-violet-700 transition-all duration-300 font-black text-sm uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-purple-500/50 hover:shadow-xl hover:shadow-purple-500/50 hover:scale-105">
+                    <button 
+                    onClick={() => {
+              router.push('/login') 
+            }}
+                    className="group w-full sm:w-auto px-8 py-4 inset-0 bg-gradient-to-b from-transparent border border-violet-500 via-black/40 to-black/80 hover:from-purple-700 hover:to-violet-700 transition-all duration-300 font-black text-sm uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-purple-500/50 hover:shadow-xl hover:shadow-purple-500/50 hover:scale-105">
                       Start Exploring Free
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -750,9 +767,9 @@ export default function Home() {
               <div className="relative max-w-4xl mx-auto text-center space-y-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full backdrop-blur-sm mb-4">
                   <Rocket className="w-4 h-4 text-purple-400" />
-                  <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">
+                  <button className="text-xs font-bold text-purple-300 uppercase tracking-wider">
                     Start Your Journey Today
-                  </span>
+                  </button>
                 </div>
 
                 <ScrollFloat
