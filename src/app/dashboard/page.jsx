@@ -622,8 +622,5 @@ function Dashboard() {
 }
 
 
-export async function getServerSideProps() {
-  return { props: {} };   
-}
 
 export default withAuth(Dashboard);
