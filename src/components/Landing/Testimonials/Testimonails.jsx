@@ -37,7 +37,7 @@ const Testimonails = () => {
                   <ScrollFloat
                     animationDuration={1}
                     ease="back.inOut(2)"
-                    scrollStart="center bottom+=50%"
+                    scrollStart="center bottom+=40%"
                     scrollEnd="bottom bottom-=40%"
                     stagger={0.03}
                     textClassName="text-5xl md:text-6xl font-black mb-4 uppercase tracking-tighter"

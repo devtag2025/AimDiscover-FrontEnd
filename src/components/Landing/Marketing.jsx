@@ -13,16 +13,16 @@ const Marketing = () => {
             >
               <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
-                  <ScrollFloat
-                    animationDuration={1}
-                    ease="back.inOut(2)"
-                    scrollStart="center bottom+=50%"
-                    scrollEnd="bottom bottom-=40%"
-                    stagger={0.03}
-                    textClassName="text-5xl md:text-6xl font-black mb-4 uppercase tracking-tighter"
-                  >
-                    Global Coverage
-                  </ScrollFloat>
+                <ScrollFloat
+  animationDuration={1}
+  ease="back.inOut(2)"
+  scrollStart="center bottom+=50%"
+  scrollEnd="bottom bottom-=40%"
+  stagger={0.03}
+  textClassName="text-5xl md:text-6xl font-black mb-4 uppercase tracking-tighter"
+>
+  Global Coverage
+</ScrollFloat>
                   <p className="text-gray-400 text-lg flex items-center justify-center gap-2">
                     <Globe2 className="w-5 h-5 text-purple-400" />
                     180+ Countries • Real-time Data

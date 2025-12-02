@@ -20,16 +20,16 @@ const CTA = () => {
                   </button>
                 </div>
 
-                <ScrollFloat
-                  animationDuration={1}
-                  ease="back.inOut(2)"
-                  scrollStart="center bottom+=50%"
-                  scrollEnd="bottom bottom-=40%"
-                  stagger={0.03}
-                  textClassName="text-5xl md:text-6xl font-black mb-4 uppercase tracking-tighter"
-                >
-                  Ready To Launch
-                </ScrollFloat>
+            <ScrollFloat
+  animationDuration={1}
+  ease="back.inOut(2)"
+  scrollStart="center bottom+=20%"
+  scrollEnd="bottom bottom-=20%"
+  stagger={0.03}
+  textClassName="text-5xl md:text-6xl font-black mb-4 uppercase tracking-tighter"
+>
+  Ready To Launch
+</ScrollFloat>
 
                 <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
                   Join{" "}
