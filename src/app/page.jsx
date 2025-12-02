@@ -312,7 +312,6 @@ export default function Home() {
 
   return (
     <>
-      {/* Floating Navigation */}
       <div className="absolute flex-row top-6 right-6 z-10 flex items-center gap-10 w-full">
   <FloatingDock desktopClassName="dark" items={links} />
 
