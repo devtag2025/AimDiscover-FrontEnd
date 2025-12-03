@@ -1,0 +1,47 @@
+/* CyberpunkConicLoader.css */
+
+.loader-wrapper {
+  /* Mimics the dark grey body background for the component */
+  background-color: #1A1A1A;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Makes the loader component full-screen */
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+.loader {
+  width: 60px;
+  aspect-ratio: 1.154;
+  
+  /* --- CYBERPUNK PURPLE COLOR --- */
+  --neon-purple: #C040C0; 
+  
+  /* Conic Gradient definitions */
+  --c: #0000 ,var(--neon-purple) 2deg 59deg,#0000 61deg;
+  
+  --c1:conic-gradient(from 149deg at top,var(--c));
+  --c2:conic-gradient(from -31deg at bottom,var(--c));
+  
+  background:
+    var(--c1) top,
+    var(--c1) bottom right,
+    var(--c2) bottom,
+    var(--c1) bottom left;
+    
+  background-size: 50% 50%;
+  background-repeat: no-repeat;
+  
+  /* Neon Glow Effect */
+  filter: drop-shadow(0 0 5px var(--neon-purple)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+  
+  animation: l37 1s infinite;
+}
+
+@keyframes l37 {
+  80%,100%{background-position: bottom right,bottom left,bottom,top}
+}
