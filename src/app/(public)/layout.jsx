@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
+import LoginHeader from "@/components/common/LoginHeader";
 
 export default function PublicLayout({ children }) {
   const pathname = usePathname();
@@ -11,6 +12,7 @@ export default function PublicLayout({ children }) {
 
   return (
     <div className="relative min-h-screen bg-black flex flex-col">
+      <LoginHeader />
       <Header />
       
       {/* Main Content */}
