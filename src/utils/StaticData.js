@@ -13,6 +13,11 @@ import {
  Brain,Boxes,Target,Eye
 } from "lucide-react";
 import { IconHome } from "@tabler/icons-react";
+import { ToolCase } from "lucide-react";
+import { PrinterIcon } from "lucide-react";
+import { PhoneMissedIcon } from "lucide-react";
+import { BookAIcon } from "lucide-react";
+import { GlassesIcon } from "lucide-react";
 export const markets = [
     {
       id: "north-america",
@@ -100,6 +105,41 @@ export const markets = [
         <IconHome className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
       href: "/",
+    },
+       {
+      title: "Features",
+      icon: (
+        <ToolCase className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "/feature",
+    },
+       {
+      title: "Pricing",
+      icon: (
+        <PrinterIcon className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "/pricing",
+    },
+       {
+      title: "Contact",
+      icon: (
+        <PhoneMissedIcon className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "/contact",
+    },
+           {
+      title: "FAQ",
+      icon: (
+        <BookAIcon className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "/faq",
+    },
+           {
+      title: "Privacy Policy",
+      icon: (
+        <GlassesIcon className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "/privacy",
     },
   ];
 
