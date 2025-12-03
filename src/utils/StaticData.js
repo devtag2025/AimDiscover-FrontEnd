@@ -14,10 +14,15 @@ import {
 } from "lucide-react";
 import { IconHome } from "@tabler/icons-react";
 import { ToolCase } from "lucide-react";
-import { PrinterIcon } from "lucide-react";
-import { PhoneMissedIcon } from "lucide-react";
-import { BookAIcon } from "lucide-react";
-import { GlassesIcon } from "lucide-react";
+
+import { DollarSignIcon } from "lucide-react";
+import { HatGlasses } from "lucide-react";
+
+import { TableOfContents } from "lucide-react";
+import { PhoneIncoming } from "lucide-react";
+import { PhoneCall } from "lucide-react";
+import { Plus } from "lucide-react";
+import { Cable } from "lucide-react";
 export const markets = [
     {
       id: "north-america",
@@ -109,35 +114,35 @@ export const markets = [
        {
       title: "Features",
       icon: (
-        <ToolCase className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+        <Cable className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
       href: "/feature",
     },
        {
       title: "Pricing",
       icon: (
-        <PrinterIcon className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+        <DollarSignIcon className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
       href: "/pricing",
     },
        {
       title: "Contact",
       icon: (
-        <PhoneMissedIcon className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+        <PhoneCall className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
       href: "/contact",
     },
            {
       title: "FAQ",
       icon: (
-        <BookAIcon className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+        <TableOfContents className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
       href: "/faq",
     },
            {
       title: "Privacy Policy",
       icon: (
-        <GlassesIcon className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+        <HatGlasses className="h-full w-full text-neutral-500 dark:text-neutral-300" />
       ),
       href: "/privacy",
     },
