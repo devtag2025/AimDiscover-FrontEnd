@@ -114,19 +114,24 @@ export default function FeaturePage() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
         
         {/* Header */}
-        <div className="max-w-3xl mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-5xl md:text-6xl font-semibold text-neutral-50 mb-6 tracking-tight leading-tight">
-              Powerful features for modern analytics
-            </h1>
-            <p className="text-lg text-neutral-400 leading-relaxed">
-              Everything you need to analyze, understand, and act on your data. Built for teams who demand the best.
-            </p>
-          </motion.div>
+       
+   <div className="border-b  border-neutral-800/50">
+          <div className="max-w-4xl  mx-auto px-6 py-16 md:py-20">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="text-4xl md:text-5xl max-w-2xl mx-auto font-semibold text-neutral-50 mb-4 tracking-tight">
+               Powerful features for modern analytics
+              </h1>
+              <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+               Everything you need to analyze, understand, and act on your data. Built for teams who demand the best.
+              </p>
+            </motion.div>
+
+         
+          </div>
         </div>
 
         {/* Stats */}
