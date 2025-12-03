@@ -90,7 +90,7 @@ const Footer = () => {
 
           <div className="pt-8 border-t-2 border-gray-900 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-gray-600 text-xs uppercase font-mono tracking-wider">
-              © 2025 AimDiscovery. All rights reserved.
+             © {new Date().getFullYear()} AimDiscover. All rights reserved.
             </div>
             <div className="flex gap-6 text-gray-600 text-xs uppercase font-mono tracking-wider">
               <button className="hover:text-purple-400 transition-colors">

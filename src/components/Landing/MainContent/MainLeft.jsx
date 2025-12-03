@@ -1,13 +1,14 @@
 import React from 'react'
 import { ArrowRight,Sparkles,CheckCircle,Zap,Shield } from 'lucide-react';
+import { LifeBuoyIcon } from 'lucide-react';
 const MainLeft = () => {
   return (
     <>
      <div className="text-center lg:text-left space-y-8">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full backdrop-blur-sm">
-                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <LifeBuoyIcon className="w-4 h-4 text-purple-400" />
                     <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">
-                      AI-Powered Market Intelligence
+                       Market Intelligence
                     </span>
                   </div>
 
