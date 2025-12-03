@@ -154,10 +154,10 @@ export default function FAQPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="text-4xl md:text-5xl font-semibold text-neutral-50 mb-4 tracking-tight">
+              <h1 className="text-4xl md:text-5xl max-w-2xl mx-auto font-semibold text-neutral-50 mb-4 tracking-tight">
                 Frequently Asked Questions
               </h1>
-              <p className="text-lg text-neutral-400 leading-relaxed max-w-2xl">
+              <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">
                 Find answers to common questions about AimDiscovery. Can't find what you're looking for? Our support team is here to help.
               </p>
             </motion.div>

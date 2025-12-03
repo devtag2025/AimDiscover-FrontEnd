@@ -81,99 +81,116 @@ export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(false);
 
   return (
-    <div className="min-h-screen bg-neutral-950 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-neutral-950 to-neutral-950" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-purple-600/10 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      
+      {/* Purple gradient backgrounds - matching Feature page */}
+      <div className="fixed inset-0 bg-gradient-to-b from-purple-950/20 via-black to-black pointer-events-none" />
+      <div className="fixed top-0 left-1/3 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[128px] pointer-events-none" />
+      <div className="fixed bottom-0 right-1/3 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[128px] pointer-events-none" />
 
-      {/* Content */}
-      <div className="relative z-10 mt-12 max-w-7xl mx-auto px-4 py-20">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Simple, Transparent{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">
-              Pricing
-            </span>
-          </h1>
-          <p className="text-neutral-400 text-lg max-w-2xl mx-auto mb-8">
-            Choose the perfect plan for your needs. Start free, upgrade when you're ready.
-          </p>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+        
+        {/* Header - matching Feature page style */}
+        <div className="border-b border-neutral-800/50">
+          <div className="max-w-4xl mx-auto px-6 py-16 md:py-20">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <h1 className="text-4xl md:text-5xl font-semibold text-neutral-50 mb-4 tracking-tight">
+                Simple, transparent pricing
+              </h1>
+              <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+                Choose the perfect plan for your needs. Start free, upgrade when you're ready.
+              </p>
+            </motion.div>
 
-          {/* Billing Toggle */}
-          <div className="inline-flex items-center gap-4 p-1.5 bg-neutral-900 rounded-xl border border-neutral-800">
-            <button
-              onClick={() => setIsYearly(false)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                !isYearly 
-                  ? "bg-purple-600 text-white shadow-lg" 
-                  : "text-neutral-400 hover:text-white"
-              }`}
+            {/* Billing Toggle */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="mt-8 flex justify-center"
             >
-              Monthly
-            </button>
-            <button
-              onClick={() => setIsYearly(true)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                isYearly 
-                  ? "bg-purple-600 text-white shadow-lg" 
-                  : "text-neutral-400 hover:text-white"
-              }`}
-            >
-              Yearly
-              <span className="ml-2 text-xs text-green-400">Save 20%</span>
-            </button>
+              <div className="inline-flex items-center gap-1 p-1.5 bg-neutral-900/60 rounded-xl border border-neutral-800/50">
+                <button
+                  onClick={() => setIsYearly(false)}
+                  className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    !isYearly 
+                      ? "bg-purple-600 text-white shadow-lg shadow-purple-500/25" 
+                      : "text-neutral-400 hover:text-neutral-200"
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setIsYearly(true)}
+                  className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    isYearly 
+                      ? "bg-purple-600 text-white shadow-lg shadow-purple-500/25" 
+                      : "text-neutral-400 hover:text-neutral-200"
+                  }`}
+                >
+                  Yearly
+                  <span className="ml-2 text-xs text-green-400 font-semibold">Save 20%</span>
+                </button>
+              </div>
+            </motion.div>
           </div>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-20">
+        <div className="grid md:grid-cols-3 gap-6 mt-12 mb-20">
           {plans.map((plan, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`relative rounded-2xl border p-8 ${
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+              className={`group relative p-8 rounded-xl border backdrop-blur-sm transition-all duration-300 ${
                 plan.popular
-                  ? "border-purple-500 bg-gradient-to-b from-purple-900/30 to-neutral-900/50 shadow-xl shadow-purple-500/10"
-                  : "border-purple-500/20 bg-neutral-900/50"
+                  ? "border-purple-500/50 bg-gradient-to-b from-purple-900/20 to-neutral-900/40 shadow-xl shadow-purple-500/10"
+                  : "border-neutral-800/50 bg-neutral-900/40 hover:border-purple-500/30 hover:bg-neutral-900/60"
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <span className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white text-sm font-semibold rounded-full">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="px-4 py-1.5 bg-purple-600 text-white text-xs font-semibold rounded-full shadow-lg shadow-purple-500/25">
                     Most Popular
                   </span>
                 </div>
               )}
 
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                <p className="text-neutral-400 text-sm">{plan.description}</p>
+                <h3 className="text-xl font-semibold text-neutral-50 mb-2 group-hover:text-purple-300 transition-colors">
+                  {plan.name}
+                </h3>
+                <p className="text-neutral-500 text-sm">{plan.description}</p>
               </div>
 
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">
+              <div className="mb-8">
+                <span className="text-4xl font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                   ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}
                 </span>
-                <span className="text-neutral-400 ml-2">
+                <span className="text-neutral-500 ml-2 text-sm">
                   /{isYearly ? "year" : "month"}
                 </span>
               </div>
 
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3 text-neutral-300">
-                    <svg className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <li key={i} className="flex items-start gap-3 text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors">
+                    <svg className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     {feature}
                   </li>
                 ))}
                 {plan.limitations.map((limitation, i) => (
-                  <li key={i} className="flex items-start gap-3 text-neutral-500">
-                    <svg className="w-5 h-5 text-neutral-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <li key={i} className="flex items-start gap-3 text-sm text-neutral-600">
+                    <svg className="w-4 h-4 text-neutral-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     {limitation}
@@ -183,10 +200,10 @@ export default function PricingPage() {
 
               <Link
                 href={plan.monthlyPrice === 0 ? "/signup" : "/signup?plan=" + plan.name.toLowerCase()}
-                className={`block w-full py-3 px-6 rounded-xl text-center font-semibold transition-all ${
+                className={`block w-full py-3 px-6 rounded-lg text-center font-medium transition-all ${
                   plan.popular
-                    ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white shadow-lg shadow-purple-500/25"
-                    : "bg-neutral-800 hover:bg-neutral-700 text-white"
+                    ? "bg-purple-600 hover:bg-purple-500 text-neutral-50 shadow-lg shadow-purple-500/25"
+                    : "bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800/50 hover:border-neutral-700 text-neutral-200"
                 }`}
               >
                 {plan.cta}
@@ -196,67 +213,72 @@ export default function PricingPage() {
         </div>
 
         {/* Feature Comparison Table */}
-        <div className="rounded-2xl border border-purple-500/20 bg-neutral-900/50 overflow-hidden">
-          <div className="p-6 border-b border-neutral-800">
-            <h2 className="text-2xl font-bold text-white">Feature Comparison</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="rounded-xl border border-neutral-800/50 bg-neutral-900/40 backdrop-blur-sm overflow-hidden"
+        >
+          <div className="p-6 border-b border-neutral-800/50">
+            <h2 className="text-xl font-semibold text-neutral-50">Feature Comparison</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-neutral-800">
-                  <th className="text-left p-4 text-neutral-400 font-medium">Feature</th>
-                  <th className="text-center p-4 text-neutral-400 font-medium">Starter</th>
-                  <th className="text-center p-4 text-purple-400 font-medium">Professional</th>
-                  <th className="text-center p-4 text-neutral-400 font-medium">Enterprise</th>
+                <tr className="border-b border-neutral-800/50">
+                  <th className="text-left p-4 text-neutral-500 font-medium text-sm">Feature</th>
+                  <th className="text-center p-4 text-neutral-500 font-medium text-sm">Starter</th>
+                  <th className="text-center p-4 text-purple-400 font-medium text-sm">Professional</th>
+                  <th className="text-center p-4 text-neutral-500 font-medium text-sm">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
                 {comparisonFeatures.map((feature, index) => (
-                  <tr key={index} className="border-b border-neutral-800/50 hover:bg-purple-500/5">
-                    <td className="p-4 text-white">{feature.name}</td>
+                  <tr key={index} className="border-b border-neutral-800/30 hover:bg-purple-500/5 transition-colors">
+                    <td className="p-4 text-neutral-300 text-sm">{feature.name}</td>
                     <td className="p-4 text-center">
                       {typeof feature.starter === "boolean" ? (
                         feature.starter ? (
-                          <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         ) : (
-                          <svg className="w-5 h-5 text-neutral-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-neutral-700 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         )
                       ) : (
-                        <span className="text-neutral-400">{feature.starter}</span>
+                        <span className="text-neutral-500 text-sm">{feature.starter}</span>
                       )}
                     </td>
                     <td className="p-4 text-center bg-purple-500/5">
                       {typeof feature.pro === "boolean" ? (
                         feature.pro ? (
-                          <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         ) : (
-                          <svg className="w-5 h-5 text-neutral-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-neutral-700 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         )
                       ) : (
-                        <span className="text-purple-400 font-medium">{feature.pro}</span>
+                        <span className="text-purple-400 font-medium text-sm">{feature.pro}</span>
                       )}
                     </td>
                     <td className="p-4 text-center">
                       {typeof feature.enterprise === "boolean" ? (
                         feature.enterprise ? (
-                          <svg className="w-5 h-5 text-green-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         ) : (
-                          <svg className="w-5 h-5 text-neutral-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-neutral-700 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         )
                       ) : (
-                        <span className="text-neutral-400">{feature.enterprise}</span>
+                        <span className="text-neutral-500 text-sm">{feature.enterprise}</span>
                       )}
                     </td>
                   </tr>
@@ -264,27 +286,36 @@ export default function PricingPage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </motion.div>
 
-        {/* FAQ CTA */}
-        <div className="mt-16 text-center">
-          <p className="text-neutral-400 mb-4">Have questions about our pricing?</p>
-          <div className="flex items-center justify-center gap-4">
+        {/* CTA Section - matching Feature page */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="mt-20 p-12 rounded-2xl bg-gradient-to-br from-purple-500/10 via-purple-600/5 to-blue-600/10 border border-purple-500/20 text-center"
+        >
+          <h2 className="text-3xl font-semibold text-neutral-50 mb-4">
+            Have questions about pricing?
+          </h2>
+          <p className="text-neutral-400 mb-8 max-w-2xl mx-auto">
+            Our team is here to help you find the perfect plan for your needs.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/faq"
-              className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+              className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-neutral-50 font-medium rounded-lg transition-all"
             >
               View FAQ
             </Link>
-            <span className="text-neutral-600">•</span>
             <Link
               href="/contact"
-              className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+              className="px-8 py-3 bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800/50 hover:border-neutral-700 text-neutral-200 font-medium rounded-lg transition-all"
             >
               Contact Sales
             </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

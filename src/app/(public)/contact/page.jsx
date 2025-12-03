@@ -91,18 +91,18 @@ export default function ContactPage() {
       <div className="fixed top-20 left-20 w-[500px] h-[500px] bg-purple-600/8 rounded-full blur-[128px] pointer-events-none" />
       <div className="fixed bottom-20 right-20 w-[500px] h-[500px] bg-blue-600/8 rounded-full blur-[128px] pointer-events-none" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 py-20">
+      <div className="relative  z-10 max-w-6xl mx-auto px-6 py-20">
         {/* Header */}
-        <div className="mb-16">
+        <div className="mb-16 pt-14 flex justify-center items-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-5xl md:text-6xl font-semibold text-neutral-50 mb-6 tracking-tight">
+            <h1 className="text-5xl  md:text-6xl font-semibold text-neutral-50 mb-6 tracking-tight">
               Get in touch
             </h1>
-            <p className="text-lg text-neutral-400 max-w-2xl">
+            <p className="text-lg flex mx-auto items-center justify-center text-neutral-400 max-w-xl">
               Have a question or need help? We're here to assist you. Send us a message and we'll respond as soon as possible.
             </p>
           </motion.div>

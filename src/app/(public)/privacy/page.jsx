@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 const sections = [
   {
@@ -109,58 +110,85 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-neutral-950 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-neutral-950 to-neutral-950" />
-      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      
+      {/* Purple gradient backgrounds - matching Feature page */}
+      <div className="fixed inset-0 bg-gradient-to-b from-purple-950/20 via-black to-black pointer-events-none" />
+      <div className="fixed top-0 right-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[128px] pointer-events-none" />
+      <div className="fixed bottom-1/3 left-0 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[128px] pointer-events-none" />
 
-      {/* Content */}
-      <div className="relative z-10 mt-12 max-w-4xl mx-auto px-4 py-20">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Privacy{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">
-              Policy
-            </span>
-          </h1>
-          <p className="text-neutral-400">
-            Last updated: December 2, 2025
-          </p>
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-20">
+        
+        {/* Header - matching Feature page style */}
+        <div className="border-b border-neutral-800/50">
+          <div className="py-16 md:py-20">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="text-4xl flex justify-center items-center md:text-5xl font-semibold text-neutral-50 mb-4 tracking-tight">
+                Privacy Policy
+              </h1>
+              <p className="text-lg flex justify-center items-center text-neutral-400 leading-relaxed">
+                Last updated: December 2, 2025
+              </p>
+            </motion.div>
+          </div>
         </div>
 
         {/* Introduction */}
-        <div className="prose prose-invert max-w-none mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="py-12 border-b border-neutral-800/50"
+        >
           <p className="text-neutral-300 text-lg leading-relaxed">
             At AimDiscovery, we take your privacy seriously. This Privacy Policy explains how we collect, 
             use, disclose, and safeguard your information when you use our platform. Please read this 
             policy carefully to understand our practices regarding your data.
           </p>
-        </div>
+        </motion.div>
 
         {/* Table of Contents */}
-        <div className="mb-12 p-6 rounded-2xl border border-purple-500/20 bg-neutral-900/50">
-          <h2 className="text-lg font-semibold text-white mb-4">Table of Contents</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="my-12 p-6 rounded-xl border border-neutral-800/50 bg-neutral-900/40 backdrop-blur-sm"
+        >
+          <h2 className="text-sm font-semibold text-purple-400 uppercase tracking-wider mb-4">
+            Table of Contents
+          </h2>
           <ul className="space-y-2">
             {sections.map((section, index) => (
               <li key={index}>
                 <a 
                   href={`#section-${index}`}
-                  className="text-purple-400 hover:text-purple-300 transition-colors"
+                  className="text-neutral-400 hover:text-purple-400 transition-colors text-sm flex items-center gap-2"
                 >
-                  {index + 1}. {section.title}
+                  <span className="text-neutral-600">{index + 1}.</span>
+                  {section.title}
                 </a>
               </li>
             ))}
           </ul>
-        </div>
+        </motion.div>
 
         {/* Sections */}
         <div className="space-y-12">
           {sections.map((section, index) => (
-            <section key={index} id={`section-${index}`} className="scroll-mt-8">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <span className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm">
+            <motion.section
+              key={index}
+              id={`section-${index}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
+              className="scroll-mt-24 p-8 rounded-xl border border-neutral-800/50 bg-neutral-900/40 backdrop-blur-sm hover:border-purple-500/30 transition-all"
+            >
+              <h2 className="text-xl font-semibold text-neutral-50 mb-6 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 text-sm font-medium">
                   {index + 1}
                 </span>
                 {section.title}
@@ -168,7 +196,7 @@ export default function PrivacyPage() {
               <div className="space-y-6 pl-11">
                 {section.content.map((item, i) => (
                   <div key={i}>
-                    <h3 className="text-lg font-semibold text-purple-400 mb-2">
+                    <h3 className="text-sm font-semibold text-purple-400 uppercase tracking-wider mb-2">
                       {item.subtitle}
                     </h3>
                     <p className="text-neutral-400 leading-relaxed">
@@ -177,32 +205,39 @@ export default function PrivacyPage() {
                   </div>
                 ))}
               </div>
-            </section>
+            </motion.section>
           ))}
         </div>
 
-        {/* Contact Section */}
-        <div className="mt-16 p-8 rounded-2xl border border-purple-500/20 bg-gradient-to-r from-purple-900/20 to-purple-800/10">
-          <h2 className="text-2xl font-bold text-white mb-4">Questions About Privacy?</h2>
-          <p className="text-neutral-400 mb-6">
+        {/* Contact CTA - matching Feature page style */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="mt-20 p-12 rounded-2xl bg-gradient-to-br from-purple-500/10 via-purple-600/5 to-blue-600/10 border border-purple-500/20 text-center"
+        >
+          <h2 className="text-3xl font-semibold text-neutral-50 mb-4">
+            Questions about privacy?
+          </h2>
+          <p className="text-neutral-400 mb-8 max-w-2xl mx-auto">
             If you have any questions or concerns about this Privacy Policy or our data practices, 
             please don't hesitate to contact us.
           </p>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-colors"
+              className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-neutral-50 font-medium rounded-lg transition-all"
             >
               Contact Us
             </Link>
             <a
               href="mailto:privacy@aimdiscovery.com"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-purple-500/30 hover:border-purple-500/50 text-purple-400 font-semibold rounded-xl transition-colors"
+              className="px-8 py-3 bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800/50 hover:border-neutral-700 text-neutral-200 font-medium rounded-lg transition-all"
             >
               privacy@aimdiscovery.com
             </a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
