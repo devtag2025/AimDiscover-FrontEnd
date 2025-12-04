@@ -1,9 +1,12 @@
 "use client"
+import { footerlinks } from "@/utils/StaticData";
+import Link from "next/link";
 import React from "react";
+
 const Footer = () => {
   return (
     <>
-      <footer className="border-t-2 relative z-10 border-gray-900 bg-black py-16 px-6">
+      <footer className="border-t-2 relative pointer-events-auto z-10 border-gray-900 bg-black py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
@@ -93,15 +96,16 @@ const Footer = () => {
              © {new Date().getFullYear()} AimDiscover. All rights reserved.
             </div>
             <div className="flex gap-6 text-gray-600 text-xs uppercase font-mono tracking-wider">
-              <button className="hover:text-purple-400 transition-colors">
-                Privacy
-              </button>
-              <button className="hover:text-purple-400 transition-colors">
-                Terms
-              </button>
-              <button className="hover:text-purple-400 transition-colors">
-                Cookies
-              </button>
+              {footerlinks.map((links)=>(
+                
+               
+                  <Link  className="hover:text-purple-400 transition-colors cursor-pointer" key={links.href} href={links.href}>
+                {links.text}
+                </Link>
+              
+           
+              ))}
+              
             </div>
           </div>
         </div>
