@@ -8,7 +8,7 @@ const handleLogout = async(router)=>{
        await AxiosInstance.post('/auth/logout' , {}, {withCredentials:true})
        useAuthStore.getState().resetAuth();
        localStorage.clear("token")
-       router.push('/login') 
+       router.push('/') 
     } catch (error) { 
         toast.error('Logout Failed',error)
         console.error('Logout Failed',error);

@@ -17,9 +17,12 @@ import Footer from "@/components/common/Footer";
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
-const Testimonails = dynamic(() => import("@/components/Landing/Testimonials/Testimonails"), {
-  ssr: false,
-});
+const Testimonails = dynamic(
+  () => import("@/components/Landing/Testimonials/Testimonails"),
+  {
+    ssr: false,
+  }
+);
 
 const Hyperspeed = dynamic(() => import("@/components/Hyperspeed"), {
   ssr: false,
@@ -102,13 +105,10 @@ export default function Home() {
   return (
     <div id="smooth-wrapper" ref={smoothWrapperRef} className="relative">
       <div id="smooth-content" ref={smoothContentRef}>
-        
         {/* LANDING PAGE CONTENT */}
         <div className="min-h-screen bg-black text-white overflow-hidden">
-          
           {/* HERO SECTION */}
           <section className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
-            
             {/* Background Animation */}
             <div className="absolute inset-0 z-0" data-speed="1">
               <Hyperspeed />
@@ -135,7 +135,6 @@ export default function Home() {
 
         {/* Footer INSIDE smooth content for Home page */}
         <Footer />
-
       </div>
     </div>
   );
