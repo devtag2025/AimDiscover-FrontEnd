@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { IconLayoutNavbarCollapse } from "@tabler/icons-react";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "motion/react";
-
+import { BorderBeam } from "../common/BorderBeam";
 import { useRef, useState } from "react";
 
 export const FloatingDock = ({
@@ -28,7 +28,8 @@ const FloatingDockMobile = ({
         {open && (
           <motion.div
             layoutId="nav"
-            className="absolute inset-x-0 bottom-full mb-2 flex flex-col gap-2">
+            className="absolute overflow-hidden inset-x-0 bottom-full mb-2 flex flex-col gap-2">
+            
             {items.map((item, idx) => (
               <motion.div
                 key={item.title}
@@ -58,7 +59,17 @@ const FloatingDockMobile = ({
       </AnimatePresence>
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-800">
+        className="flex  overflow-hidden h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-800">
+               <BorderBeam
+                  size={60}
+                  initialOffset={60}
+                  className="from-transparent via-slate-300 to-slate-400"
+                  transition={{
+                    type: "Infinity",
+                    stiffness: 60,
+                    damping: 20,
+                  }}
+                />
         <IconLayoutNavbarCollapse className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
       </button>
     </div>
@@ -75,9 +86,21 @@ const FloatingDockDesktop = ({
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(Infinity)}
       className={cn(
-        "border border-purple-700/40 mx-auto hidden h-16 items-end gap-4 rounded-3xl bg-neutral-900 px-6 pb-4 md:flex dark:bg-neutral-900",
+        "border  relative overflow-hidden mx-auto hidden h-16 items-end gap-4 rounded-3xl bg-neutral-900 px-6 pb-4 md:flex dark:bg-neutral-900",
         className
       )}>
+              
+                <BorderBeam
+                  size={80}
+                  initialOffset={120}
+                  className="from-transparent via-slate-300 to-slate-400"
+                  transition={{
+                    type: "Infinity",
+                    stiffness: 60,
+                    damping: 20,
+                  }}
+                />
+              
       {items.map((item) => (
         <IconContainer mouseX={mouseX} key={item.title} {...item} />
       ))}

@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import handleLogout from "@/utils/logout";
 import { useRouter } from "next/navigation";
-
+import { BorderBeam } from "./BorderBeam";
 const LoginHeader = () => {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
@@ -48,7 +48,18 @@ const handleDash = (router) =>{
               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
             />
           </svg>
-          <span className="hidden sm:inline">Go to Dashbaord</span>
+               
+                <BorderBeam
+                  size={40}
+                  initialOffset={20}
+                  className="from-transparent via-purple-500 to-transparent"
+                  transition={{
+                    type: "spring",
+                    stiffness: 60,
+                    damping: 20,
+                  }}
+                />
+            Go to Dashboard
         </button>
       ) : (
         <button

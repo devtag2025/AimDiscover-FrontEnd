@@ -5,7 +5,8 @@ import Link from "next/link";
 import handleLogout from "@/utils/logout";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import Image from "next/image"; 
+import Image from "next/image";
+import { BorderBeam } from "@/components/common/BorderBeam";
 import {
   LayoutDashboard,
   Search,
@@ -91,7 +92,15 @@ export default function DashboardLayout({ children }) {
           {/* Logo */}
           <div className="p-6 border-b border-white/10">
             <Link href="/dashboard" className="flex items-center gap-3 group">
-              <Image src="/Logo.png" alt="login-image" width={200} height={200} cover className="object-cover opacity-80" priority />
+              <Image
+                src="/Logo.png"
+                alt="login-image"
+                width={200}
+                height={200}
+                cover
+                className="object-cover opacity-80"
+                priority
+              />
             </Link>
           </div>
 
@@ -136,36 +145,36 @@ export default function DashboardLayout({ children }) {
           </nav>
 
           {/* Bottom Navigation */}
-     <div className="p-4 border-t border-white/10 space-y-2">
-      {bottomNavigation.map((item) => {
-        const Icon = item.icon;
-        const isLogout = item.name === "Logout";
+          <div className="p-4 border-t border-white/10 space-y-2">
+            {bottomNavigation.map((item) => {
+              const Icon = item.icon;
+              const isLogout = item.name === "Logout";
 
-        return isLogout ? (
-          <button
-            key={item.name}
-            onClick={() => handleLogout(router)}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-purple-500/30 transition-all duration-300 group text-left"
-          >
-            <Icon className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
-            <span className="font-medium text-gray-400 group-hover:text-white transition-colors">
-              {item.name}
-            </span>
-          </button>
-        ) : (
-          <Link
-            key={item.name}
-            href={item.href}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-purple-500/30 transition-all duration-300 group"
-          >
-            <Icon className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
-            <span className="font-medium text-gray-400 group-hover:text-white transition-colors">
-              {item.name}
-            </span>
-          </Link>
-        );
-      })}
-    </div>
+              return isLogout ? (
+                <button
+                  key={item.name}
+                  onClick={() => handleLogout(router)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-purple-500/30 transition-all duration-300 group text-left"
+                >
+                  <Icon className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                  <span className="font-medium text-gray-400 group-hover:text-white transition-colors">
+                    {item.name}
+                  </span>
+                </button>
+              ) : (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-purple-500/30 transition-all duration-300 group"
+                >
+                  <Icon className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                  <span className="font-medium text-gray-400 group-hover:text-white transition-colors">
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
 
           {/* User Profile */}
           <div className="p-4 border-t border-white/10">
@@ -226,9 +235,19 @@ export default function DashboardLayout({ children }) {
                 <span className="absolute top-1 right-1 w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
               </button>
 
-              <button className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 transition-all duration-300 shadow-lg shadow-purple-500/30">
-                <Sparkles className="w-4 h-4" />
-                <span className="text-sm font-semibold">Upgrade</span>
+              <button className="relative overflow-hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-black to-slate-700 hover:from-purple-500 hover:to-purple-400 transition-all duration-300 shadow-lg shadow-purple-500/30">
+                <Globe className="text-purple-500" />
+                Upgrade
+                <BorderBeam
+                  size={40}
+                  initialOffset={20}
+                  className="from-transparent via-purple-500 to-transparent"
+                  transition={{
+                    type: "spring",
+                    stiffness: 60,
+                    damping: 20,
+                  }}
+                />
               </button>
             </div>
           </div>
