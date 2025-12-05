@@ -4,6 +4,7 @@ import { contactMethods, socials } from "@/utils/StaticData";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { useSendMail } from "@/hooks/useSupport";
+import Loader from "@/components/common/Loader/Loader";
 
 export default function ContactPage() {
   const {
@@ -182,15 +183,32 @@ export default function ContactPage() {
             </div>
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting || isPending}
-              className="w-full py-3.5 px-6 bg-purple-600 hover:bg-purple-500 
-                text-neutral-50 font-medium rounded-lg shadow-lg shadow-purple-500/25
-                transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting || isPending ? "Sending..." : "Send Message"}
-            </button>
+         <button
+  type="submit"
+  disabled={isSubmitting || isPending}
+  className="w-full py-3.5 px-6 bg-purple-600 hover:bg-purple-500 
+    text-neutral-50 font-medium rounded-lg shadow-lg shadow-purple-500/25
+    transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {isSubmitting || isPending ? (
+    <span className="flex items-center justify-center gap-2">
+ 
+      <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+
+      <span className="flex items-center gap-1 text-sm tracking-wide">
+        <span className="animate-pulse">Sending</span>
+        <span className="flex items-center gap-0.5">
+          <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:0ms]" />
+          <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:150ms]" />
+          <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:300ms]" />
+        </span>
+      </span>
+    </span>
+  ) : (
+    "Send Message"
+  )}
+</button>
+
           </motion.form>
 
           {/* RIGHT SIDE INFO */}
