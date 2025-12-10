@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
   Check, 
   Copy, 
-  ChevronDown, 
-  ChevronRight, 
+  ChevronDown,
   ExternalLink,
-  Quote,
   Code,
   Hash,
   Sparkles,
@@ -18,20 +16,37 @@ import {
   AlertCircle,
   Info,
   Bookmark,
-  ArrowRight,
   Star,
   Zap,
   Target,
   TrendingUp,
   MessageSquare,
-  BookOpen
+  BookOpen,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 
-// Random icon picker for variety
-const PARAGRAPH_ICONS = [Lightbulb, Star, Zap, Target, TrendingUp, Bookmark, ArrowRight];
-const getRandomIcon = (index) => PARAGRAPH_ICONS[index % PARAGRAPH_ICONS.length];
+// ==================== STORAGE HELPERS ====================
+const STORAGE_KEY = 'markdown-renderer-state';
 
-// Copy Button Component
+const saveState = (state) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn('Failed to save state:', e);
+  }
+};
+
+const loadState = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+// ==================== COPY BUTTON ====================
 const CopyButton = ({ text, className = "" }) => {
   const [copied, setCopied] = useState(false);
 
@@ -48,185 +63,187 @@ const CopyButton = ({ text, className = "" }) => {
   return (
     <button
       onClick={handleCopy}
-      className={`p-2 rounded-lg bg-neutral-700/50 hover:bg-neutral-600/50 text-neutral-400 hover:text-white transition-all duration-200 ${className}`}
-      title={copied ? "Copied!" : "Copy"}
+      className={`
+        group relative p-2 rounded-lg transition-all duration-200
+        ${copied 
+          ? 'bg-emerald-500/20 text-emerald-400 scale-95' 
+          : 'bg-slate-700/50 hover:bg-slate-600/70 text-slate-400 hover:text-white hover:scale-105'
+        }
+        ${className}
+      `}
+      title={copied ? "Copied!" : "Copy to clipboard"}
     >
-      {copied ? (
-        <Check className="w-4 h-4 text-green-400" />
-      ) : (
-        <Copy className="w-4 h-4" />
+      <div className="relative w-4 h-4">
+        <Copy className={`absolute inset-0 transition-all duration-300 ${copied ? 'opacity-0 scale-0 rotate-180' : 'opacity-100 scale-100 rotate-0'}`} />
+        <Check className={`absolute inset-0 transition-all duration-300 ${copied ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-0 -rotate-180'}`} />
+      </div>
+      {copied && (
+        <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-emerald-500 text-white text-xs font-medium rounded-lg whitespace-nowrap shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
+          Copied to clipboard!
+        </span>
       )}
     </button>
   );
 };
 
-// Collapsible Section Component
+// ==================== COLLAPSIBLE SECTION ====================
 const CollapsibleSection = ({ 
   title, 
   children, 
-  defaultOpen = true, 
+  isOpen: externalIsOpen,
+  onToggle,
   icon: Icon = FileText,
   level = 2,
   id 
 }) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  const sizeClasses = {
-    1: "text-xl font-bold",
-    2: "text-lg font-semibold",
-    3: "text-base font-medium",
-    4: "text-sm font-medium",
-  };
-
   return (
     <div 
       id={id}
-      className="border border-neutral-800 rounded-xl mb-5 overflow-hidden bg-neutral-900/50 hover:border-neutral-700 transition-colors duration-200"
+      className="mb-5 rounded-xl overflow-hidden border border-slate-700/50 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm transition-all duration-300 hover:border-slate-600/70 hover:shadow-xl hover:shadow-purple-500/10"
     >
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-neutral-800/80 to-neutral-800/40 hover:from-neutral-800 hover:to-neutral-800/60 transition-all duration-200 text-left group"
+        onClick={onToggle}
+        className="w-full flex items-center gap-3 px-5 py-4 text-left transition-all duration-200 hover:bg-slate-700/20 group"
       >
-        <span className={`
-          p-1.5 rounded-lg transition-all duration-300
-          ${isOpen ? 'bg-purple-500/20 rotate-0' : 'bg-neutral-700/50 -rotate-90'}
+        <div className={`
+          transition-all duration-300 ease-out
+          ${externalIsOpen ? 'rotate-0' : '-rotate-90'}
         `}>
-          <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-0' : '-rotate-90'} ${isOpen ? 'text-purple-400' : 'text-neutral-400'}`} />
-        </span>
-        <Icon className={`w-5 h-5 transition-colors duration-200 ${isOpen ? 'text-purple-400' : 'text-neutral-500'}`} />
-        <span className={`${sizeClasses[level]} text-white flex-1 group-hover:text-purple-200 transition-colors`}>
+          <ChevronDown className={`w-4 h-4 transition-colors duration-200 ${externalIsOpen ? 'text-purple-400' : 'text-slate-500 group-hover:text-slate-400'}`} />
+        </div>
+        
+        <Icon className={`w-5 h-5 transition-all duration-200 ${externalIsOpen ? 'text-purple-400 scale-110' : 'text-slate-500 group-hover:text-purple-400 group-hover:scale-105'}`} />
+        
+        <span className="flex-1 text-base font-semibold text-slate-100 transition-colors group-hover:text-white">
           {title}
         </span>
+        
         <span className={`
-          text-xs px-2 py-1 rounded-full transition-all duration-200
-          ${isOpen ? 'bg-purple-500/20 text-purple-400' : 'bg-neutral-700/50 text-neutral-500'}
+          text-xs px-2.5 py-1 rounded-full transition-all duration-200 font-medium
+          ${externalIsOpen 
+            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
+            : 'bg-slate-700/50 text-slate-400 border border-slate-600/50 group-hover:bg-slate-600/50 group-hover:text-slate-300'
+          }
         `}>
-          {isOpen ? 'Collapse' : 'Expand'}
+          {externalIsOpen ? 'Hide' : 'Show'}
         </span>
       </button>
+      
       <div
         className={`
-          overflow-hidden transition-all duration-500 ease-in-out
-          ${isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'}
+          transition-all duration-500 ease-in-out overflow-hidden
+          ${externalIsOpen ? 'max-h-[10000px] opacity-100' : 'max-h-0 opacity-0'}
         `}
       >
-        <div className="p-5 pt-3 border-t border-neutral-800/50">{children}</div>
+        <div className="px-5 py-5 border-t border-slate-700/30">
+          {children}
+        </div>
       </div>
     </div>
   );
 };
 
-// Interactive List Item with icon at END
+// ==================== INTERACTIVE LIST ITEM ====================
 const InteractiveListItem = ({ children, ordered, index }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const Icon = getRandomIcon(index);
 
   return (
-    <li
+    <li 
+      className="group py-2 transition-all duration-200"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`
-        text-neutral-300 leading-relaxed py-2.5 px-4 -mx-4 rounded-xl
-        transition-all duration-300 cursor-default border border-transparent
-        ${isHovered ? 'bg-neutral-800/70 text-white border-neutral-700/50 shadow-lg shadow-purple-500/5' : ''}
-      `}
     >
       <div className="flex items-start gap-3">
         <span className={`
-          flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold
-          transition-all duration-300
-          ${isHovered 
-            ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white scale-110 shadow-lg shadow-purple-500/30' 
-            : 'bg-neutral-800 text-neutral-400 border border-neutral-700'
+          flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold
+          transition-all duration-300 ease-out
+          ${ordered 
+            ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30' 
+            : 'bg-slate-700/50 text-slate-400 border border-slate-600/50'
           }
+          ${isHovered ? 'scale-110 shadow-lg shadow-purple-500/20 rotate-3' : 'scale-100'}
         `}>
           {ordered ? index : '•'}
         </span>
-        <span className="flex-1 pt-0.5">{children}</span>
-        {/* Icon at the END */}
-        <Icon className={`
-          w-4 h-4 flex-shrink-0 mt-1 transition-all duration-300
-          ${isHovered ? 'text-purple-400 opacity-100 translate-x-0' : 'text-neutral-600 opacity-0 -translate-x-2'}
-        `} />
+        <span className={`flex-1 leading-relaxed pt-0.5 transition-colors duration-200 ${isHovered ? 'text-slate-100' : 'text-slate-300'}`}>
+          {children}
+        </span>
       </div>
     </li>
   );
 };
 
-// Enhanced Paragraph with icon at END
-const EnhancedParagraph = ({ children, index, animated }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const Icon = getRandomIcon(index);
-
+// ==================== ENHANCED PARAGRAPH ====================
+const EnhancedParagraph = ({ children, animated }) => {
   return (
-    <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`
-        relative group mb-4 p-4 -mx-4 rounded-xl transition-all duration-300
-        ${isHovered ? 'bg-neutral-800/30' : ''}
-        ${animated ? 'animate-fade-in' : ''}
-      `}
-    >
-      <p className="text-neutral-300 leading-relaxed pr-8">
-        {children}
-      </p>
-      {/* Icon at the END (top-right) */}
-      <Icon className={`
-        absolute top-4 right-4 w-4 h-4 transition-all duration-300
-        ${isHovered ? 'text-purple-400 opacity-100 scale-110' : 'text-neutral-700 opacity-0 scale-90'}
-      `} />
-    </div>
+    <p className={`text-slate-300 leading-relaxed mb-4 transition-colors duration-200 hover:text-slate-100 ${animated ? 'animate-in fade-in slide-in-from-bottom-1 duration-500' : ''}`}>
+      {children}
+    </p>
   );
 };
 
-// Enhanced Code Block
+// ==================== CODE BLOCK ====================
 const CodeBlock = ({ children, className }) => {
   const language = className?.replace('language-', '') || 'text';
   const code = String(children).replace(/\n$/, '');
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const lineCount = code.split('\n').length;
-  const shouldCollapse = lineCount > 10;
+  const shouldCollapse = lineCount > 15;
+  const maxHeight = isExpanded ? 'none' : shouldCollapse ? '400px' : 'none';
 
   return (
-    <div className="group relative mb-5 rounded-xl overflow-hidden border border-neutral-800 hover:border-neutral-700 transition-colors shadow-lg">
+    <div 
+      className="group relative mb-6 rounded-xl overflow-hidden border border-slate-700/50 transition-all duration-300 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/10"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-neutral-800 to-neutral-850 border-b border-neutral-700">
+      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-800/90 to-slate-800/70 border-b border-slate-700/50 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500/80" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+            <div className="w-3 h-3 rounded-full bg-red-500/70 transition-all duration-200 group-hover:bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/70 transition-all duration-200 group-hover:bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-emerald-500/70 transition-all duration-200 group-hover:bg-emerald-500" />
           </div>
-          <div className="flex items-center gap-2">
-            <Code className="w-4 h-4 text-purple-400" />
-            <span className="text-xs font-mono text-neutral-400 uppercase tracking-wider">{language}</span>
-          </div>
+          <Code className="w-4 h-4 text-purple-400 transition-transform duration-200 group-hover:scale-110" />
+          <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">{language}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-500">{lineCount} lines</span>
+          <span className="text-xs text-slate-500 px-2 py-1 rounded bg-slate-700/30">{lineCount} lines</span>
           {shouldCollapse && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-xs px-2 py-1 rounded bg-neutral-700/50 hover:bg-neutral-600/50 text-neutral-400 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 hover:text-white transition-all duration-200 hover:scale-105"
             >
-              {isExpanded ? 'Collapse' : 'Expand'}
+              {isExpanded ? (
+                <>
+                  <Minimize2 className="w-3 h-3" />
+                  Collapse
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3 h-3" />
+                  Expand
+                </>
+              )}
             </button>
           )}
-          <CopyButton text={code} className="opacity-0 group-hover:opacity-100" />
+          <CopyButton text={code} className={`transition-all duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
         </div>
       </div>
+      
       {/* Code Content */}
-      <div className={`
-        transition-all duration-300 overflow-hidden
-        ${!isExpanded && shouldCollapse ? 'max-h-48' : 'max-h-[2000px]'}
-      `}>
-        <pre className="bg-neutral-900 p-4 overflow-x-auto">
-          <code className="text-sm font-mono text-neutral-200 leading-relaxed">
+      <div 
+        className="relative overflow-hidden transition-all duration-500"
+        style={{ maxHeight }}
+      >
+        <pre className="bg-slate-900/60 p-5 overflow-x-auto backdrop-blur-sm">
+          <code className="text-sm font-mono text-slate-200 leading-relaxed">
             {code.split('\n').map((line, i) => (
-              <div key={i} className="flex hover:bg-neutral-800/50 -mx-4 px-4 transition-colors">
-                <span className="select-none text-neutral-600 w-8 flex-shrink-0 text-right pr-4 text-xs pt-0.5">
+              <div key={i} className="flex hover:bg-slate-700/30 -mx-5 px-5 transition-all duration-150 group/line">
+                <span className="select-none text-slate-600 w-12 flex-shrink-0 text-right pr-4 text-xs pt-0.5 transition-colors group-hover/line:text-slate-500">
                   {i + 1}
                 </span>
                 <span className="flex-1">{line || ' '}</span>
@@ -234,34 +251,26 @@ const CodeBlock = ({ children, className }) => {
             ))}
           </code>
         </pre>
+        
+        {/* Fade overlay for collapsed state */}
+        {!isExpanded && shouldCollapse && (
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-900 via-slate-900/90 to-transparent pointer-events-none" />
+        )}
       </div>
-      {/* Fade overlay for collapsed state */}
-      {!isExpanded && shouldCollapse && (
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-neutral-900 to-transparent pointer-events-none" />
-      )}
     </div>
   );
 };
 
-// Animated Heading (non-collapsible version)
-const AnimatedHeading = ({ level, children, id, ...props }) => {
+// ==================== ANIMATED HEADING ====================
+const AnimatedHeading = ({ level, children, id }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [copied, setCopied] = useState(false);
   
-  const baseClasses = "font-bold text-white transition-all duration-200 flex items-center gap-3 group cursor-default";
-  
   const sizes = {
-    1: "text-2xl mt-8 mb-4",
-    2: "text-xl mt-6 mb-3",
-    3: "text-lg mt-5 mb-2",
-    4: "text-base mt-4 mb-2",
-  };
-
-  const iconColors = {
-    1: "text-purple-400",
-    2: "text-blue-400",
-    3: "text-emerald-400",
-    4: "text-amber-400",
+    1: "text-3xl mt-8 mb-5",
+    2: "text-2xl mt-6 mb-4",
+    3: "text-xl mt-5 mb-3",
+    4: "text-lg mt-4 mb-2",
   };
 
   const Tag = `h${level}`;
@@ -277,47 +286,50 @@ const AnimatedHeading = ({ level, children, id, ...props }) => {
   return (
     <Tag
       id={id}
-      className={`${baseClasses} ${sizes[level]} ${isHovered ? 'text-purple-200' : ''}`}
+      className={`
+        font-bold text-slate-100 transition-all duration-200 flex items-center gap-3 group
+        ${sizes[level]}
+        ${isHovered ? 'text-purple-200' : ''}
+      `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      {...props}
     >
       <span className="flex-1">{children}</span>
-      {/* Hash icon at END */}
       <button 
         onClick={handleCopyLink}
         className={`
-          p-1 rounded transition-all duration-200
-          ${isHovered ? 'opacity-100' : 'opacity-0'}
-          ${copied ? 'bg-green-500/20' : 'hover:bg-neutral-800'}
+          p-1.5 rounded-lg transition-all duration-200
+          ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}
+          ${copied ? 'bg-emerald-500/20' : 'hover:bg-slate-700/50'}
         `}
-        title={copied ? "Link copied!" : "Copy link"}
+        title={copied ? "Link copied!" : "Copy link to section"}
       >
         {copied ? (
-          <Check className="w-4 h-4 text-green-400" />
+          <Check className="w-4 h-4 text-emerald-400" />
         ) : (
-          <Hash className={`w-4 h-4 ${iconColors[level]}`} />
+          <Hash className="w-4 h-4 text-purple-400" />
         )}
       </button>
     </Tag>
   );
 };
 
-// Icon mapping for section types
+// ==================== ICON MAPPING ====================
 const getSectionIcon = (text) => {
   const lower = text.toLowerCase();
   if (lower.includes('overview') || lower.includes('summary')) return BookOpen;
   if (lower.includes('insight') || lower.includes('analysis')) return Lightbulb;
-  if (lower.includes('warning') || lower.includes('risk')) return AlertCircle;
+  if (lower.includes('warning') || lower.includes('risk') || lower.includes('alert')) return AlertCircle;
   if (lower.includes('info') || lower.includes('note')) return Info;
   if (lower.includes('trend') || lower.includes('growth')) return TrendingUp;
   if (lower.includes('key') || lower.includes('important')) return Star;
   if (lower.includes('action') || lower.includes('step')) return Target;
   if (lower.includes('comment') || lower.includes('feedback')) return MessageSquare;
+  if (lower.includes('bookmark') || lower.includes('save')) return Bookmark;
   return FileText;
 };
 
-// Main Component
+// ==================== MAIN COMPONENT ====================
 const MarkdownRenderer = ({ 
   content, 
   title = "Insights",
@@ -327,14 +339,33 @@ const MarkdownRenderer = ({
   collapsibleSections = true,
   defaultCollapsed = false
 }) => {
-  const [activeSection, setActiveSection] = useState(null);
+  const [sectionStates, setSectionStates] = useState({});
   const [allExpanded, setAllExpanded] = useState(!defaultCollapsed);
+  const [activeSection, setActiveSection] = useState(null);
 
-  // Track paragraph index for variety
+  // Load saved state on mount
+  useEffect(() => {
+    const saved = loadState();
+    if (saved?.sectionStates) {
+      setSectionStates(saved.sectionStates);
+      setAllExpanded(saved.allExpanded ?? !defaultCollapsed);
+    }
+  }, [defaultCollapsed]);
+
+  // Save state when it changes (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      saveState({ sectionStates, allExpanded });
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
+  }, [sectionStates, allExpanded]);
+
+  // Track paragraph and list indices
   let paragraphIndex = 0;
   let listIndex = 0;
 
-  // Extract headings for table of contents
+  // Extract headings for TOC
   const headings = useMemo(() => {
     if (!showTableOfContents || !content) return [];
     const regex = /^(#{1,3})\s+(.+)$/gm;
@@ -350,7 +381,29 @@ const MarkdownRenderer = ({
     return matches;
   }, [content, showTableOfContents]);
 
-  // Parse content into sections for collapsible behavior
+  const toggleSection = useCallback((sectionId) => {
+    setSectionStates(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  }, []);
+
+  const toggleAllSections = useCallback(() => {
+    const newState = !allExpanded;
+    setAllExpanded(newState);
+    
+    // Update all section states
+    const sections = content.match(/^## (.+)$/gm) || [];
+    const newSectionStates = {};
+    sections.forEach(section => {
+      const title = section.replace('## ', '');
+      const id = title.toLowerCase().replace(/[^\w]+/g, '-');
+      newSectionStates[id] = newState;
+    });
+    setSectionStates(newSectionStates);
+  }, [allExpanded, content]);
+
+  // Parse content into sections
   const renderContent = () => {
     if (!collapsibleSections) {
       return (
@@ -363,7 +416,6 @@ const MarkdownRenderer = ({
       );
     }
 
-    // Split content by h2 headings for collapsible sections
     const sections = content.split(/(?=^## )/gm);
     
     return sections.map((section, idx) => {
@@ -374,6 +426,7 @@ const MarkdownRenderer = ({
         const sectionContent = section.replace(/^## .+$/m, '').trim();
         const sectionId = title.toLowerCase().replace(/[^\w]+/g, '-');
         const Icon = getSectionIcon(title);
+        const isOpen = sectionStates[sectionId] ?? allExpanded;
 
         return (
           <CollapsibleSection 
@@ -381,7 +434,8 @@ const MarkdownRenderer = ({
             title={title} 
             icon={Icon}
             id={sectionId}
-            defaultOpen={allExpanded}
+            isOpen={isOpen}
+            onToggle={() => toggleSection(sectionId)}
             level={2}
           >
             <ReactMarkdown
@@ -394,7 +448,6 @@ const MarkdownRenderer = ({
         );
       }
 
-      // Content before first h2 (intro)
       if (section.trim()) {
         return (
           <div key={idx} className="mb-6">
@@ -412,66 +465,58 @@ const MarkdownRenderer = ({
   };
 
   const markdownComponents = {
-    // Headings (h3, h4 are inline, h1, h2 handled by sections)
-    h1: ({ node, children, ...props }) => {
+    h1: ({ children }) => {
       const id = String(children).toLowerCase().replace(/[^\w]+/g, '-');
-      return <AnimatedHeading level={1} id={id} {...props}>{children}</AnimatedHeading>;
+      return <AnimatedHeading level={1} id={id}>{children}</AnimatedHeading>;
     },
-    h2: ({ node, children, ...props }) => {
-      const id = String(children).toLowerCase().replace(/[^\w]+/g, '-');
-      // Only render if not using collapsible sections
+    h2: ({ children }) => {
       if (!collapsibleSections) {
-        return <AnimatedHeading level={2} id={id} {...props}>{children}</AnimatedHeading>;
+        const id = String(children).toLowerCase().replace(/[^\w]+/g, '-');
+        return <AnimatedHeading level={2} id={id}>{children}</AnimatedHeading>;
       }
       return null;
     },
-    h3: ({ node, children, ...props }) => {
+    h3: ({ children }) => {
       const id = String(children).toLowerCase().replace(/[^\w]+/g, '-');
-      return <AnimatedHeading level={3} id={id} {...props}>{children}</AnimatedHeading>;
+      return <AnimatedHeading level={3} id={id}>{children}</AnimatedHeading>;
     },
-    h4: ({ node, children, ...props }) => {
+    h4: ({ children }) => {
       const id = String(children).toLowerCase().replace(/[^\w]+/g, '-');
-      return <AnimatedHeading level={4} id={id} {...props}>{children}</AnimatedHeading>;
+      return <AnimatedHeading level={4} id={id}>{children}</AnimatedHeading>;
     },
     
-    // Enhanced Paragraphs with icon at END
-    p: ({ node, children, ...props }) => {
+    p: ({ children }) => {
       const currentIndex = paragraphIndex++;
-      return (
-        <EnhancedParagraph index={currentIndex} animated={animated}>
-          {children}
-        </EnhancedParagraph>
-      );
+      return <EnhancedParagraph animated={animated}>{children}</EnhancedParagraph>;
     },
     
-    strong: ({ node, children, ...props }) => (
-      <strong className="font-semibold text-white bg-gradient-to-r from-purple-500/20 to-blue-500/20 px-1.5 py-0.5 rounded-md border border-purple-500/20" {...props}>
+    strong: ({ children }) => (
+      <strong className="font-semibold text-white bg-gradient-to-r from-purple-500/15 to-blue-500/15 px-1.5 py-0.5 rounded-md border border-purple-500/20">
         {children}
       </strong>
     ),
     
-    em: ({ node, ...props }) => (
-      <em className="italic text-purple-300 not-italic font-medium" {...props} />
+    em: ({ children }) => (
+      <em className="italic text-purple-300 not-italic font-medium">{children}</em>
     ),
     
-    // Interactive Lists with icon at END
-    ul: ({ node, children, ...props }) => {
+    ul: ({ children }) => {
       listIndex = 0;
       return (
-        <ul className="mb-5 space-y-1 bg-neutral-800/20 rounded-xl p-3 border border-neutral-800/50" {...props}>
+        <ul className="mb-5 space-y-1 pl-1">
           {children}
         </ul>
       );
     },
-    ol: ({ node, children, ...props }) => {
+    ol: ({ children }) => {
       listIndex = 0;
       return (
-        <ol className="mb-5 space-y-1 bg-neutral-800/20 rounded-xl p-3 border border-neutral-800/50" {...props}>
+        <ol className="mb-5 space-y-1 pl-1">
           {children}
         </ol>
       );
     },
-    li: ({ node, children, ordered, ...props }) => {
+    li: ({ children, ordered }) => {
       listIndex++;
       return (
         <InteractiveListItem ordered={ordered} index={listIndex}>
@@ -480,91 +525,76 @@ const MarkdownRenderer = ({
       );
     },
     
-    // Enhanced Tables
-    table: ({ node, ...props }) => (
-      <div className="overflow-x-auto mb-6 rounded-xl border border-neutral-800 shadow-xl">
-        <table className="min-w-full divide-y divide-neutral-700" {...props} />
+    table: (props) => (
+      <div className="overflow-x-auto mb-6 rounded-xl border border-slate-700/50 shadow-xl">
+        <table className="min-w-full divide-y divide-slate-700" {...props} />
       </div>
     ),
-    thead: ({ node, ...props }) => (
-      <thead className="bg-gradient-to-r from-purple-900/30 to-blue-900/30" {...props} />
+    thead: (props) => (
+      <thead className="bg-gradient-to-r from-slate-800/80 to-slate-800/50" {...props} />
     ),
-    tbody: ({ node, ...props }) => (
-      <tbody className="bg-neutral-900 divide-y divide-neutral-800" {...props} />
+    tbody: (props) => (
+      <tbody className="bg-slate-900/30 divide-y divide-slate-700/30" {...props} />
     ),
-    tr: ({ node, ...props }) => (
-      <tr className="hover:bg-purple-500/10 transition-colors duration-200" {...props} />
+    tr: (props) => (
+      <tr className="hover:bg-purple-500/5 transition-colors duration-150" {...props} />
     ),
-    th: ({ node, ...props }) => (
-      <th className="px-5 py-4 text-left text-sm font-semibold text-white tracking-wide" {...props} />
+    th: (props) => (
+      <th className="px-5 py-4 text-left text-sm font-semibold text-slate-200 tracking-wide" {...props} />
     ),
-    td: ({ node, ...props }) => (
-      <td className="px-5 py-4 text-sm text-neutral-300" {...props} />
+    td: (props) => (
+      <td className="px-5 py-4 text-sm text-slate-300" {...props} />
     ),
     
-    // Code with copy functionality
-    code: ({ node, inline, className, children, ...props }) => {
+    code: ({ inline, className, children }) => {
       if (inline) {
         return (
-          <code 
-            className="bg-gradient-to-r from-neutral-800 to-neutral-850 text-purple-400 px-2 py-1 rounded-lg text-sm font-mono border border-neutral-700 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-200 cursor-default" 
-            {...props}
-          >
+          <code className="bg-slate-800/70 text-purple-300 px-2 py-0.5 rounded-lg text-sm font-mono border border-slate-700/50 hover:border-purple-500/50 hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200">
             {children}
           </code>
         );
       }
       return <CodeBlock className={className}>{children}</CodeBlock>;
     },
-    pre: ({ node, children, ...props }) => <>{children}</>,
+    pre: ({ children }) => <>{children}</>,
     
-    // Enhanced Links with icon at END
-    a: ({ node, children, href, ...props }) => (
+    a: ({ children, href }) => (
       <a 
         href={href}
-        className="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 underline decoration-purple-500/30 hover:decoration-purple-400 underline-offset-4 transition-all duration-200 group font-medium" 
+        className="inline-flex items-center gap-1 text-purple-400 hover:text-purple-300 underline decoration-purple-500/30 hover:decoration-purple-400 underline-offset-2 transition-all duration-200 group font-medium" 
         target="_blank" 
-        rel="noopener noreferrer" 
-        {...props}
+        rel="noopener noreferrer"
       >
         {children}
-        <ExternalLink className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+        <ExternalLink className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
       </a>
     ),
     
-    // Decorative Horizontal rule
-    hr: ({ node, ...props }) => (
+    hr: () => (
       <div className="my-10 flex items-center gap-4">
         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
         <div className="flex items-center gap-2 px-4">
-          <Star className="w-3 h-3 text-purple-500/50" />
+          <Star className="w-3 h-3 text-purple-500/50 animate-pulse" />
           <Sparkles className="w-4 h-4 text-purple-400/70" />
-          <Star className="w-3 h-3 text-purple-500/50" />
+          <Star className="w-3 h-3 text-purple-500/50 animate-pulse" />
         </div>
         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
       </div>
     ),
     
-    // Enhanced Blockquote
-    blockquote: ({ node, children, ...props }) => (
-      <blockquote 
-        className="relative my-6 pl-6 pr-6 py-5 border-l-4 border-purple-500 bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent rounded-r-xl shadow-lg" 
-        {...props}
-      >
-        <Quote className="absolute top-4 right-4 w-10 h-10 text-purple-500/15" />
-        <div className="text-neutral-200 italic leading-relaxed">{children}</div>
-        <MessageSquare className="absolute bottom-4 right-4 w-4 h-4 text-purple-500/30" />
+    blockquote: ({ children }) => (
+      <blockquote className="relative my-6 pl-5 pr-5 py-5 border-l-4 border-purple-500 bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent rounded-r-xl shadow-lg">
+        <div className="text-slate-200 leading-relaxed">{children}</div>
       </blockquote>
     ),
 
-    // Task lists (GFM)
-    input: ({ node, checked, ...props }) => (
+    input: ({ checked }) => (
       <span className={`
-        inline-flex items-center justify-center w-5 h-5 rounded-md border-2 mr-3
+        inline-flex items-center justify-center w-5 h-5 rounded-md mr-3 border-2
         transition-all duration-200
         ${checked 
-          ? 'bg-purple-500 border-purple-500 text-white' 
-          : 'bg-neutral-800 border-neutral-600 hover:border-purple-500/50'
+          ? 'bg-purple-500 border-purple-500 text-white scale-110' 
+          : 'bg-slate-800 border-slate-600 hover:border-purple-500/50'
         }
       `}>
         {checked && <Check className="w-3 h-3" />}
@@ -573,37 +603,28 @@ const MarkdownRenderer = ({
   };
 
   return (
-    <div className={`bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl ${className}`}>
+    <div className={`bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl ${className}`}>
       {/* Header */}
       {title && (
-        <div className="px-6 py-5 border-b border-neutral-800 bg-gradient-to-r from-neutral-900 via-neutral-900 to-neutral-800">
+        <div className="px-6 py-5 border-b border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/20">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 shadow-lg shadow-purple-500/20">
                 <Sparkles className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">{title}</h2>
-                <p className="text-xs text-neutral-500 mt-0.5">AI-powered analysis</p>
+                <h2 className="text-xl font-bold text-slate-100">{title}</h2>
+                <p className="text-xs text-slate-400 mt-0.5">AI-powered analysis & insights</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {collapsibleSections && (
                 <button
-                  onClick={() => setAllExpanded(!allExpanded)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white transition-all text-sm"
+                  onClick={toggleAllSections}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 hover:text-white transition-all duration-200 text-sm font-medium hover:scale-105"
                 >
-                  {allExpanded ? (
-                    <>
-                      <ChevronDown className="w-4 h-4" />
-                      Collapse All
-                    </>
-                  ) : (
-                    <>
-                      <ChevronRight className="w-4 h-4" />
-                      Expand All
-                    </>
-                  )}
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${allExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  {allExpanded ? 'Collapse All' : 'Expand All'}
                 </button>
               )}
               <CopyButton text={content} />
@@ -615,8 +636,8 @@ const MarkdownRenderer = ({
       <div className="flex">
         {/* Table of Contents Sidebar */}
         {showTableOfContents && headings.length > 0 && (
-          <div className="w-64 border-r border-neutral-800 p-5 bg-neutral-950/50 hidden lg:block sticky top-0 max-h-screen overflow-y-auto">
-            <h3 className="text-xs font-bold text-neutral-500 mb-4 uppercase tracking-widest flex items-center gap-2">
+          <div className="w-64 border-r border-slate-700/50 p-5 bg-slate-950/50 hidden lg:block sticky top-0 max-h-screen overflow-y-auto">
+            <h3 className="text-xs font-bold text-slate-500 mb-4 uppercase tracking-widest flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Contents
             </h3>
@@ -631,13 +652,12 @@ const MarkdownRenderer = ({
                     ${heading.level === 2 ? 'ml-2' : ''}
                     ${heading.level === 3 ? 'ml-4 text-xs' : ''}
                     ${activeSection === heading.id 
-                      ? 'bg-purple-500/20 text-purple-300 border-l-2 border-purple-500' 
-                      : 'text-neutral-400 hover:text-white hover:bg-neutral-800/70'
+                      ? 'bg-purple-500/20 text-purple-300 border-l-2 border-purple-500 shadow-lg shadow-purple-500/10' 
+                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                     }
                   `}
                   onClick={() => setActiveSection(heading.id)}
                 >
-                  <ArrowRight className={`w-3 h-3 transition-transform ${activeSection === heading.id ? 'translate-x-1' : ''}`} />
                   <span className="truncate">{heading.text}</span>
                 </a>
               ))}
@@ -654,10 +674,10 @@ const MarkdownRenderer = ({
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-3 border-t border-neutral-800 bg-neutral-950/50 flex items-center justify-between">
-        <span className="text-xs text-neutral-600">Rendered with AI insights</span>
+      <div className="px-6 py-3 border-t border-slate-700/50 bg-slate-950/50 flex items-center justify-between">
+        <span className="text-xs text-slate-500">Powered by Analytics • Interactive Documentation</span>
         <div className="flex items-center gap-1.5">
-          <Zap className="w-3 h-3 text-yellow-500/50" />
+          <Zap className="w-3 h-3 text-yellow-500/50 animate-pulse" />
         </div>
       </div>
     </div>

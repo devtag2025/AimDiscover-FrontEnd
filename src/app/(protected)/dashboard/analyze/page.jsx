@@ -14,10 +14,9 @@ import api from "@/lib/api";
 import { CanvasLoader } from "@/components/analyze/CanvasLoader";
 import { ModelErrorBoundary } from "@/components/analyze/ModalErrorBoundary";
 import MarkdownRenderer from "@/components/analyze/MarkdownRenderer";
-
+import { REGIONS } from "@/utils/StaticData";
 const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-// --- Icons (Inline for portability) ---
 const Icons = {
   Sparkles: () => (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -351,14 +350,14 @@ export default function AnalyzePage() {
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#050505] to-[#050505] pointer-events-none" />
 
       {/* Header */}
-      <header className="relative border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl z-50">
+      <header className="relative border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl z-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center gap-3">
           <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-2 rounded-lg shadow-lg shadow-purple-500/20">
-            <Icons.Cube />
+            <Icons.Chart />
           </div>
           <div>
             <h1 className="text-xl font-bold text-white tracking-tight">
-              Product<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Vision</span> AI
+              Product<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Vision</span>
             </h1>
             <p className="text-xs text-gray-500 font-medium">Market Intelligence & 3D Visualization Engine</p>
           </div>
@@ -369,114 +368,243 @@ export default function AnalyzePage() {
         <div className="grid lg:grid-cols-12 gap-8">
           
           {/* --- LEFT COLUMN: Configuration --- */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-[#111111]/80 backdrop-blur-md border border-white/10 rounded-2xl p-6 sticky top-24 shadow-2xl">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="h-1 w-1 bg-purple-500 rounded-full"></div>
-                <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Configuration</h2>
-              </div>
+         <div className="lg:col-span-4 space-y-6">
+  <div className="sticky top-24">
+    <div className="rounded-2xl p-[1px] bg-gradient-to-b from-white/10 via-white/5 to-transparent shadow-[0_10px_40px_-20px_rgba(0,0,0,0.8)]">
+      <div className="bg-[#0b0b0d]/85 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-purple-500/30 blur-[2px]" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-purple-500" />
+            </span>
+            <h2 className="text-xs font-semibold text-gray-200 uppercase tracking-[0.2em]">
+              Configuration
+            </h2>
+          </div>
 
-              <div className="space-y-5">
-                {/* Category Select */}
-                <div className="group">
-                  <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide group-focus-within:text-purple-400 transition-colors">Target Category</label>
-                  <div className="relative">
-                    <select
-                      value={categoryId}
-                      onChange={(e) => setCategoryId(e.target.value)}
-                      disabled={isLoading || isAnalyzing}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all appearance-none text-gray-300 disabled:opacity-50"
-                    >
-                      <option value="">{isLoading ? "Loading..." : "Select a category"}</option>
-                      {categories?.map((cat) => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">▼</div>
-                  </div>
-                </div>
+          <span className="text-[10px] text-gray-500">
+            {isAnalyzing ? "Live run in progress" : "Set inputs to generate"}
+          </span>
+        </div>
 
-                {/* Region Input */}
-                <div className="group">
-                  <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide group-focus-within:text-purple-400 transition-colors">Target Region</label>
-                  <input
-                    type="text"
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value)}
-                    disabled={isAnalyzing}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all text-gray-300 placeholder:text-gray-700 disabled:opacity-50"
-                    placeholder="e.g. North America, Japan"
-                  />
-                </div>
+        <div className="space-y-5 max-h-[70vh] overflow-auto pr-1">
+          
+          {/* Category Select */}
+          <div className="group">
+            <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-wider group-focus-within:text-purple-300 transition-colors">
+              Target Category
+            </label>
 
-                {/* Product Name */}
-                <div className="group">
-                  <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide group-focus-within:text-purple-400 transition-colors">Product Name <span className="text-gray-700 font-normal normal-case">(Optional)</span></label>
-                  <input
-                    type="text"
-                    value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
-                    disabled={isAnalyzing}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all text-gray-300 placeholder:text-gray-700 disabled:opacity-50"
-                    placeholder="e.g. CyberDesk V2"
-                  />
-                </div>
+            <p className="text-[10px] text-gray-600 mb-2">
+              Choose a niche to anchor demand, competitors, and pricing.
+            </p>
 
-                {/* Art Style */}
-                <div className="group">
-                  <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide group-focus-within:text-purple-400 transition-colors">Render Style</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['realistic', 'sculpture'].map((style) => (
-                      <button
-                        key={style}
-                        onClick={() => setArtStyle(style)}
-                        disabled={isAnalyzing}
-                        className={`py-2.5 px-4 rounded-xl text-sm font-medium border transition-all ${
-                          artStyle === style
-                            ? 'bg-purple-600/20 border-purple-500 text-purple-300 shadow-[0_0_15px_-5px_rgba(147,51,234,0.3)]'
-                            : 'bg-black/40 border-white/5 text-gray-500 hover:bg-white/5 hover:border-white/10'
-                        }`}
-                      >
-                        {style.charAt(0).toUpperCase() + style.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            <div className="relative">
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                disabled={isLoading || isAnalyzing}
+                aria-busy={isLoading}
+                className="
+                  w-full appearance-none
+                  bg-black/40 border border-white/10
+                  rounded-xl px-4 py-3 pr-10 text-sm
+                  text-gray-200
+                  focus:outline-none focus:border-purple-500/50
+                  focus:ring-1 focus:ring-purple-500/40
+                  transition-all
+                  disabled:opacity-50
+                "
+              >
+                <option value="" className="bg-[#0b0b0d] text-gray-300">
+                  {isLoading ? "Loading categories..." : "Select a category"}
+                </option>
 
-                {error && (
-                  <div className="bg-red-950/30 border border-red-500/30 text-red-200 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
-                    <span>❌</span> {error}
-                  </div>
-                )}
+                {categories?.map((cat) => (
+                  <option
+                    key={cat.id}
+                    value={cat.id}
+                    className="bg-[#0b0b0d] text-gray-200"
+                  >
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
 
-                <button
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing || isLoading}
-                  className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 p-[1px] shadow-[0_0_20px_-5px_rgba(147,51,234,0.5)] transition-all hover:shadow-[0_0_25px_-5px_rgba(147,51,234,0.7)] disabled:opacity-50 disabled:shadow-none"
-                >
-                  <div className="relative h-full w-full bg-black/50 hover:bg-transparent rounded-xl py-3.5 transition-all">
-                    <div className="flex items-center justify-center gap-2 text-white font-semibold tracking-wide">
-                      {isAnalyzing ? (
-                         <>
-                           <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
-                           <span>Processing...</span>
-                         </>
-                      ) : (
-                        <>
-                          <Icons.Sparkles />
-                          <span>Generate Analysis</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </button>
-                
-                <p className="text-[10px] text-center text-gray-600 font-mono">
-                  Estimated processing time: 2-5 minutes
-                </p>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                ▼
               </div>
             </div>
           </div>
+
+          {/* Region Input */}
+          <div className="group">
+            <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-wider group-focus-within:text-purple-300 transition-colors">
+              Target Region
+            </label>
+
+            <p className="text-[10px] text-gray-600 mb-2">
+              Used to adjust pricing, compliance, and platform mix.
+            </p>
+
+            <div className="relative">
+              <select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                disabled={isAnalyzing}
+                className="
+                  w-full appearance-none
+                  bg-black/40 border border-white/10
+                  rounded-xl px-4 py-3 pr-10 text-sm
+                  text-gray-200
+                  focus:outline-none focus:border-purple-500/50
+                  focus:ring-1 focus:ring-purple-500/40
+                  transition-all
+                  disabled:opacity-50
+                "
+              >
+                <option value="" disabled className="bg-[#0b0b0d] text-gray-300">
+                  Select a region
+                </option>
+
+                {Object.entries(REGIONS).map(([code, name]) => (
+                  <option
+                    key={code}
+                    value={name}
+                    className="bg-[#0b0b0d] text-gray-200"
+                  >
+                    {name}
+                  </option>
+                ))}
+              </select>
+
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                ▼
+              </div>
+            </div>
+          </div>
+
+          {/* Product Name */}
+          <div className="group">
+            <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-wider group-focus-within:text-purple-300 transition-colors">
+              Product Name{" "}
+              <span className="text-gray-600 font-normal normal-case">
+                (Optional)
+              </span>
+            </label>
+
+            <p className="text-[10px] text-gray-600 mb-2">
+              Helps generate sharper positioning and brand angles.
+            </p>
+
+            <input
+              type="text"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              disabled={isAnalyzing}
+              placeholder="e.g. CyberDesk V2"
+              className="
+                w-full
+                bg-black/40 border border-white/10
+                rounded-xl px-4 py-3 text-sm
+                text-gray-200 placeholder:text-gray-600
+                focus:outline-none focus:border-purple-500/50
+                focus:ring-1 focus:ring-purple-500/40
+                transition-all
+                disabled:opacity-50
+              "
+            />
+          </div>
+
+          {/* Art Style */}
+          <div className="group">
+            <label className="block text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-wider group-focus-within:text-purple-300 transition-colors">
+              Render Style
+            </label>
+
+            <p className="text-[10px] text-gray-600 mb-2">
+              Affects the visual concepts and mockups you receive.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2">
+              {["realistic"].map((style) => (
+                <button
+                  key={style}
+                  type="button"
+                  onClick={() => setArtStyle(style)}
+                  disabled={isAnalyzing}
+                  aria-pressed={artStyle === style}
+                  className={`
+                    relative py-2.5 px-4 rounded-xl text-sm font-medium border transition-all
+                    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-500/40
+                    ${
+                      artStyle === style
+                        ? "bg-purple-500/15 border-purple-400/40 text-purple-200 shadow-[0_8px_24px_-12px_rgba(168,85,247,0.6)]"
+                        : "bg-black/40 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/5 hover:border-white/10"
+                    }
+                    disabled:opacity-50
+                  `}
+                >
+                  {style.charAt(0).toUpperCase() + style.slice(1)}
+                  {artStyle === style && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.9)]" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-950/30 border border-red-500/25 text-red-200 px-4 py-3 rounded-xl text-sm">
+              <div className="flex items-start gap-2">
+                <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-red-400" />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
+
+          {/* CTA */}
+          <button
+            onClick={handleAnalyze}
+            disabled={isAnalyzing || isLoading || !categoryId || !region}
+            className="
+              group relative w-full overflow-hidden rounded-xl
+              bg-gradient-to-r from-purple-600 to-indigo-600 p-[1px]
+              shadow-[0_0_18px_-6px_rgba(147,51,234,0.6)]
+              transition-all hover:shadow-[0_0_26px_-6px_rgba(147,51,234,0.8)]
+              disabled:opacity-40 disabled:shadow-none
+            "
+            title={!categoryId || !region ? "Select category and region first" : undefined}
+          >
+            <div className="relative h-full w-full bg-black/50 hover:bg-transparent rounded-xl py-3.5 transition-all">
+              <div className="flex items-center justify-center gap-2 text-white font-semibold tracking-wide">
+                {isAnalyzing ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Processing</span>
+                  </>
+                ) : (
+                  <>
+                    <Icons.Sparkles />
+                    <span>Generate Analysis</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </button>
+
+          <p className="text-[10px] text-center text-gray-600">
+            Results quality improves with a precise category and region.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
           {/* --- RIGHT COLUMN: Results --- */}
           <div className="lg:col-span-8 space-y-8">

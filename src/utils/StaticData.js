@@ -237,3 +237,11 @@ export const markets = [
     { icon: Github, url: "https://github.com/yourprofile" },
     { icon: MessageCircle, url: "https://discord.gg/yourserver" },
   ];
+
+ export const REGIONS = {
+  NA: "North America",       
+  EU: "Europe",
+  AP: "Asia-Pacific",        
+  SA: "South America",       
+  MEA: "Middle East & Africa" 
+};
