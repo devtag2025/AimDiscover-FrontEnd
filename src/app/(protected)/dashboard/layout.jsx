@@ -216,26 +216,15 @@ export default function DashboardLayout({ children }) {
               )}
             </button>
 
-            {/* Search Bar */}
-            <div className="hidden md:flex flex-1 max-w-xl mx-4">
-              <div className="relative w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search products, markets, or categories..."
-                  className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all"
-                />
-              </div>
-            </div>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-3">
-              <button className="relative p-2 rounded-xl hover:bg-white/5 border border-white/10 transition-colors">
+            <div className="flex items-center gap-10">
+              {/* <button className="relative p-2 rounded-xl hover:bg-white/5 border border-white/10 transition-colors">
                 <Bell className="w-5 h-5 text-gray-400" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-              </button>
+              </button> */}
 
-              <button className="relative overflow-hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-black to-slate-700 hover:from-purple-500 hover:to-purple-400 transition-all duration-300 shadow-lg shadow-purple-500/30">
+              <button className="relative text-sm sm:text-lg lg:text-lg overflow-hidden flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-black to-slate-700 hover:from-purple-500 hover:to-purple-400 transition-all duration-300 shadow-lg shadow-purple-500/30">
                 <Globe className="text-purple-500" />
                 Upgrade
                 <BorderBeam
