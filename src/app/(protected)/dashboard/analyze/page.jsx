@@ -357,7 +357,7 @@ export default function AnalyzePage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white tracking-tight">
-              Product<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Vision</span>
+              Product Vision<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400"> Sector</span>
             </h1>
             <p className="text-xs text-gray-500 font-medium">Market Intelligence & 3D Visualization Engine</p>
           </div>
