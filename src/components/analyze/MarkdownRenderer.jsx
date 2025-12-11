@@ -1,52 +1,46 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
-  Check, 
-  Copy, 
-  ChevronDown,
-  ExternalLink,
-  Code,
-  Hash,
-  Sparkles,
-  FileText,
-  Lightbulb,
-  AlertCircle,
-  Info,
-  Bookmark,
-  Star,
-  Zap,
-  Target,
-  TrendingUp,
-  MessageSquare,
-  BookOpen,
-  Maximize2,
-  Minimize2
+  Check, Copy, ChevronDown, ExternalLink, Hash, 
+  Sparkles, FileText, Lightbulb, AlertCircle, Info, 
+  TrendingUp, Target, BookOpen, Terminal, 
+  Maximize2, Minimize2, Menu, X
 } from 'lucide-react';
 
-// ==================== STORAGE HELPERS ====================
-const STORAGE_KEY = 'markdown-renderer-state';
+// ==================== UTILS & HOOKS ====================
 
-const saveState = (state) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.warn('Failed to save state:', e);
-  }
+// Hook to track active section based on scroll position
+const useScrollSpy = (ids, offset = 100) => {
+  const [activeId, setActiveId] = useState("");
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: `-${offset}px 0px -40% 0px` }
+    );
+
+    ids.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, [ids, offset]);
+
+  return activeId;
 };
 
-const loadState = () => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : null;
-  } catch (e) {
-    return null;
-  }
-};
+// ==================== SUB-COMPONENTS ====================
 
-// ==================== COPY BUTTON ====================
 const CopyButton = ({ text, className = "" }) => {
   const [copied, setCopied] = useState(false);
 
@@ -55,317 +49,152 @@ const CopyButton = ({ text, className = "" }) => {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
+    } catch (err) { console.error('Failed to copy', err); }
   }, [text]);
 
   return (
     <button
       onClick={handleCopy}
       className={`
-        group relative p-2 rounded-lg transition-all duration-200
+        group relative flex items-center justify-center p-2 rounded-lg border transition-all duration-200
         ${copied 
-          ? 'bg-emerald-500/20 text-emerald-400 scale-95' 
-          : 'bg-slate-700/50 hover:bg-slate-600/70 text-slate-400 hover:text-white hover:scale-105'
+          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+          : 'bg-white/5 border-white/5 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20'
         }
         ${className}
       `}
-      title={copied ? "Copied!" : "Copy to clipboard"}
+      aria-label="Copy to clipboard"
     >
       <div className="relative w-4 h-4">
-        <Copy className={`absolute inset-0 transition-all duration-300 ${copied ? 'opacity-0 scale-0 rotate-180' : 'opacity-100 scale-100 rotate-0'}`} />
-        <Check className={`absolute inset-0 transition-all duration-300 ${copied ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-0 -rotate-180'}`} />
+        <Copy className={`absolute inset-0 transition-all duration-300 ${copied ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`} />
+        <Check className={`absolute inset-0 transition-all duration-300 ${copied ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`} />
       </div>
-      {copied && (
-        <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-emerald-500 text-white text-xs font-medium rounded-lg whitespace-nowrap shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
-          Copied to clipboard!
-        </span>
-      )}
     </button>
   );
 };
 
-// ==================== COLLAPSIBLE SECTION ====================
-const CollapsibleSection = ({ 
-  title, 
-  children, 
-  isOpen: externalIsOpen,
-  onToggle,
-  icon: Icon = FileText,
-  level = 2,
-  id 
-}) => {
-  return (
-    <div 
-      id={id}
-      className="mb-5 rounded-xl overflow-hidden border border-slate-700/50 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm transition-all duration-300 hover:border-slate-600/70 hover:shadow-xl hover:shadow-purple-500/10"
-    >
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center gap-3 px-5 py-4 text-left transition-all duration-200 hover:bg-slate-700/20 group"
-      >
-        <div className={`
-          transition-all duration-300 ease-out
-          ${externalIsOpen ? 'rotate-0' : '-rotate-90'}
-        `}>
-          <ChevronDown className={`w-4 h-4 transition-colors duration-200 ${externalIsOpen ? 'text-purple-400' : 'text-slate-500 group-hover:text-slate-400'}`} />
-        </div>
-        
-        <Icon className={`w-5 h-5 transition-all duration-200 ${externalIsOpen ? 'text-purple-400 scale-110' : 'text-slate-500 group-hover:text-purple-400 group-hover:scale-105'}`} />
-        
-        <span className="flex-1 text-base font-semibold text-slate-100 transition-colors group-hover:text-white">
-          {title}
-        </span>
-        
-        <span className={`
-          text-xs px-2.5 py-1 rounded-full transition-all duration-200 font-medium
-          ${externalIsOpen 
-            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
-            : 'bg-slate-700/50 text-slate-400 border border-slate-600/50 group-hover:bg-slate-600/50 group-hover:text-slate-300'
-          }
-        `}>
-          {externalIsOpen ? 'Hide' : 'Show'}
-        </span>
-      </button>
-      
-      <div
-        className={`
-          transition-all duration-500 ease-in-out overflow-hidden
-          ${externalIsOpen ? 'max-h-[10000px] opacity-100' : 'max-h-0 opacity-0'}
-        `}
-      >
-        <div className="px-5 py-5 border-t border-slate-700/30">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ==================== INTERACTIVE LIST ITEM ====================
-const InteractiveListItem = ({ children, ordered, index }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <li 
-      className="group py-2 transition-all duration-200"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="flex items-start gap-3">
-        <span className={`
-          flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold
-          transition-all duration-300 ease-out
-          ${ordered 
-            ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30' 
-            : 'bg-slate-700/50 text-slate-400 border border-slate-600/50'
-          }
-          ${isHovered ? 'scale-110 shadow-lg shadow-purple-500/20 rotate-3' : 'scale-100'}
-        `}>
-          {ordered ? index : '•'}
-        </span>
-        <span className={`flex-1 leading-relaxed pt-0.5 transition-colors duration-200 ${isHovered ? 'text-slate-100' : 'text-slate-300'}`}>
-          {children}
-        </span>
-      </div>
-    </li>
-  );
-};
-
-// ==================== ENHANCED PARAGRAPH ====================
-const EnhancedParagraph = ({ children, animated }) => {
-  return (
-    <p className={`text-slate-300 leading-relaxed mb-4 transition-colors duration-200 hover:text-slate-100 ${animated ? 'animate-in fade-in slide-in-from-bottom-1 duration-500' : ''}`}>
-      {children}
-    </p>
-  );
-};
-
-// ==================== CODE BLOCK ====================
 const CodeBlock = ({ children, className }) => {
   const language = className?.replace('language-', '') || 'text';
   const code = String(children).replace(/\n$/, '');
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
   const lineCount = code.split('\n').length;
-  const shouldCollapse = lineCount > 15;
-  const maxHeight = isExpanded ? 'none' : shouldCollapse ? '400px' : 'none';
-
+  const shouldCollapse = lineCount > 12;
+  
   return (
-    <div 
-      className="group relative mb-6 rounded-xl overflow-hidden border border-slate-700/50 transition-all duration-300 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/10"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-800/90 to-slate-800/70 border-b border-slate-700/50 backdrop-blur-sm">
+    <div className="group relative my-6 rounded-xl border border-white/10 bg-[#0A0A0E] overflow-hidden shadow-2xl">
+      {/* Mac-style Window Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500/70 transition-all duration-200 group-hover:bg-red-500" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/70 transition-all duration-200 group-hover:bg-yellow-500" />
-            <div className="w-3 h-3 rounded-full bg-emerald-500/70 transition-all duration-200 group-hover:bg-emerald-500" />
+          <div className="flex gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#27C93F]" />
           </div>
-          <Code className="w-4 h-4 text-purple-400 transition-transform duration-200 group-hover:scale-110" />
-          <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">{language}</span>
+          <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider ml-2">
+            {language}
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 px-2 py-1 rounded bg-slate-700/30">{lineCount} lines</span>
           {shouldCollapse && (
-            <button
+            <button 
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 hover:text-white transition-all duration-200 hover:scale-105"
+              className="p-1.5 rounded hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-colors"
             >
-              {isExpanded ? (
-                <>
-                  <Minimize2 className="w-3 h-3" />
-                  Collapse
-                </>
-              ) : (
-                <>
-                  <Maximize2 className="w-3 h-3" />
-                  Expand
-                </>
-              )}
+              {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             </button>
           )}
-          <CopyButton text={code} className={`transition-all duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
+          <CopyButton text={code} className="!p-1.5 !w-7 !h-7 !bg-transparent !border-transparent hover:!bg-white/10" />
         </div>
       </div>
       
-      {/* Code Content */}
+      {/* Code Body */}
       <div 
-        className="relative overflow-hidden transition-all duration-500"
-        style={{ maxHeight }}
+        className={`relative transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-none' : shouldCollapse ? 'max-h-[320px]' : ''}`}
+        style={{ overflow: isExpanded ? 'visible' : 'hidden' }}
       >
-        <pre className="bg-slate-900/60 p-5 overflow-x-auto backdrop-blur-sm">
-          <code className="text-sm font-mono text-slate-200 leading-relaxed">
-            {code.split('\n').map((line, i) => (
-              <div key={i} className="flex hover:bg-slate-700/30 -mx-5 px-5 transition-all duration-150 group/line">
-                <span className="select-none text-slate-600 w-12 flex-shrink-0 text-right pr-4 text-xs pt-0.5 transition-colors group-hover/line:text-slate-500">
-                  {i + 1}
-                </span>
-                <span className="flex-1">{line || ' '}</span>
-              </div>
-            ))}
-          </code>
-        </pre>
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+          <pre className="p-4 min-w-full float-left">
+            <code className="block text-xs sm:text-sm font-mono text-gray-300 leading-relaxed whitespace-pre font-normal">
+              {code.split('\n').map((line, i) => (
+                <div key={i} className="table-row hover:bg-white/[0.02] transition-colors w-full">
+                  <span className="table-cell select-none text-gray-600 w-8 text-right pr-4 text-[10px] py-[1px] align-top opacity-50">
+                    {i + 1}
+                  </span>
+                  <span className="table-cell break-words">{line || ' '}</span>
+                </div>
+              ))}
+            </code>
+          </pre>
+        </div>
         
-        {/* Fade overlay for collapsed state */}
+        {/* Collapse Gradient Overlay */}
         {!isExpanded && shouldCollapse && (
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-900 via-slate-900/90 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#0A0A0E] to-transparent pointer-events-none" />
         )}
       </div>
     </div>
   );
 };
 
-// ==================== ANIMATED HEADING ====================
-const AnimatedHeading = ({ level, children, id }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [copied, setCopied] = useState(false);
-  
-  const sizes = {
-    1: "text-3xl mt-8 mb-5",
-    2: "text-2xl mt-6 mb-4",
-    3: "text-xl mt-5 mb-3",
-    4: "text-lg mt-4 mb-2",
-  };
-
-  const Tag = `h${level}`;
-
-  const handleCopyLink = () => {
-    if (id) {
-      navigator.clipboard.writeText(`${window.location.href.split('#')[0]}#${id}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  return (
-    <Tag
-      id={id}
-      className={`
-        font-bold text-slate-100 transition-all duration-200 flex items-center gap-3 group
-        ${sizes[level]}
-        ${isHovered ? 'text-purple-200' : ''}
-      `}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+const CollapsibleSection = ({ title, children, isOpen, onToggle, icon: Icon = FileText, id }) => (
+  <div 
+    id={id} 
+    className={`
+      scroll-mt-28 group mb-4 rounded-xl border transition-all duration-300 overflow-hidden
+      ${isOpen 
+        ? 'bg-white/[0.03] border-purple-500/30 shadow-[0_4px_20px_-10px_rgba(168,85,247,0.1)]' 
+        : 'bg-transparent border-white/5 hover:bg-white/[0.02] hover:border-white/10'
+      }
+    `}
+  >
+    <button
+      onClick={onToggle}
+      className="w-full flex items-center gap-4 px-4 sm:px-6 py-4 text-left focus:outline-none focus:bg-white/[0.02]"
     >
-      <span className="flex-1">{children}</span>
-      <button 
-        onClick={handleCopyLink}
-        className={`
-          p-1.5 rounded-lg transition-all duration-200
-          ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}
-          ${copied ? 'bg-emerald-500/20' : 'hover:bg-slate-700/50'}
-        `}
-        title={copied ? "Link copied!" : "Copy link to section"}
-      >
-        {copied ? (
-          <Check className="w-4 h-4 text-emerald-400" />
-        ) : (
-          <Hash className="w-4 h-4 text-purple-400" />
-        )}
-      </button>
-    </Tag>
-  );
-};
-
-// ==================== ICON MAPPING ====================
-const getSectionIcon = (text) => {
-  const lower = text.toLowerCase();
-  if (lower.includes('overview') || lower.includes('summary')) return BookOpen;
-  if (lower.includes('insight') || lower.includes('analysis')) return Lightbulb;
-  if (lower.includes('warning') || lower.includes('risk') || lower.includes('alert')) return AlertCircle;
-  if (lower.includes('info') || lower.includes('note')) return Info;
-  if (lower.includes('trend') || lower.includes('growth')) return TrendingUp;
-  if (lower.includes('key') || lower.includes('important')) return Star;
-  if (lower.includes('action') || lower.includes('step')) return Target;
-  if (lower.includes('comment') || lower.includes('feedback')) return MessageSquare;
-  if (lower.includes('bookmark') || lower.includes('save')) return Bookmark;
-  return FileText;
-};
+      <div className={`
+        flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-300
+        ${isOpen
+          ? 'bg-purple-500/20 border-purple-500/30 text-purple-300'
+          : 'bg-white/5 border-white/5 text-gray-500 group-hover:text-gray-300'
+        }
+      `}>
+        <Icon className="w-4 h-4" />
+      </div>
+      
+      <span className={`flex-1 text-sm font-semibold tracking-wide transition-colors ${isOpen ? 'text-gray-100' : 'text-gray-400 group-hover:text-gray-200'}`}>
+        {title}
+      </span>
+      
+      <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-purple-400' : 'rotate-0'}`} />
+    </button>
+    
+    <div 
+      className={`transition-[max-height,opacity] duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[8000px] opacity-100' : 'max-h-0 opacity-0'}`}
+    >
+      <div className="px-4 sm:px-6 pb-6 pt-0 border-t border-white/5">
+        <div className="pt-4 text-gray-300 space-y-4">
+          {children}
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 // ==================== MAIN COMPONENT ====================
+
 const MarkdownRenderer = ({ 
   content, 
-  title = "Insights",
+  title = "Analysis Results",
   className = "",
   showTableOfContents = false,
-  animated = true,
   collapsibleSections = true,
   defaultCollapsed = false
 }) => {
   const [sectionStates, setSectionStates] = useState({});
   const [allExpanded, setAllExpanded] = useState(!defaultCollapsed);
-  const [activeSection, setActiveSection] = useState(null);
-
-  // Load saved state on mount
-  useEffect(() => {
-    const saved = loadState();
-    if (saved?.sectionStates) {
-      setSectionStates(saved.sectionStates);
-      setAllExpanded(saved.allExpanded ?? !defaultCollapsed);
-    }
-  }, [defaultCollapsed]);
-
-  // Save state when it changes (debounced)
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      saveState({ sectionStates, allExpanded });
-    }, 300);
-    
-    return () => clearTimeout(timeoutId);
-  }, [sectionStates, allExpanded]);
-
-  // Track paragraph and list indices
-  let paragraphIndex = 0;
-  let listIndex = 0;
-
-  // Extract headings for TOC
+  const [mobileTocOpen, setMobileTocOpen] = useState(false);
+  
+  // Extract headings
   const headings = useMemo(() => {
     if (!showTableOfContents || !content) return [];
     const regex = /^(#{1,3})\s+(.+)$/gm;
@@ -381,82 +210,121 @@ const MarkdownRenderer = ({
     return matches;
   }, [content, showTableOfContents]);
 
-  const toggleSection = useCallback((sectionId) => {
-    setSectionStates(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
-  }, []);
+  // Scroll Spy to highlight active TOC item
+  const activeSectionId = useScrollSpy(headings.map(h => h.id));
 
-  const toggleAllSections = useCallback(() => {
+  // Initialize Section States
+  useEffect(() => {
+    const sections = content.match(/^## (.+)$/gm) || [];
+    const initialStates = {};
+    sections.forEach(s => {
+      const id = s.replace('## ', '').toLowerCase().replace(/[^\w]+/g, '-');
+      initialStates[id] = !defaultCollapsed;
+    });
+    setSectionStates(initialStates);
+  }, [content, defaultCollapsed]);
+
+  const toggleSection = (id) => setSectionStates(prev => ({ ...prev, [id]: !prev[id] }));
+
+  const toggleAll = () => {
     const newState = !allExpanded;
     setAllExpanded(newState);
-    
-    // Update all section states
-    const sections = content.match(/^## (.+)$/gm) || [];
-    const newSectionStates = {};
-    sections.forEach(section => {
-      const title = section.replace('## ', '');
-      const id = title.toLowerCase().replace(/[^\w]+/g, '-');
-      newSectionStates[id] = newState;
-    });
-    setSectionStates(newSectionStates);
-  }, [allExpanded, content]);
+    const newStates = { ...sectionStates };
+    Object.keys(newStates).forEach(k => newStates[k] = newState);
+    setSectionStates(newStates);
+  };
 
-  // Parse content into sections
+  const getIcon = (text) => {
+    const lower = text.toLowerCase();
+    if (lower.includes('insight') || lower.includes('analysis')) return Sparkles;
+    if (lower.includes('risk') || lower.includes('alert')) return AlertCircle;
+    if (lower.includes('trend')) return TrendingUp;
+    if (lower.includes('action')) return Target;
+    if (lower.includes('summary')) return BookOpen;
+    return FileText;
+  };
+
+  const components = {
+    // Headings
+    h1: ({ children }) => <h1 id={String(children).toLowerCase().replace(/[^\w]+/g, '-')} className="scroll-mt-32 text-2xl font-bold text-gray-100 mt-8 mb-6 pb-4 border-b border-white/10">{children}</h1>,
+    h2: ({ children }) => !collapsibleSections && <h2 id={String(children).toLowerCase().replace(/[^\w]+/g, '-')} className="scroll-mt-32 text-xl font-bold text-gray-100 mt-8 mb-4">{children}</h2>,
+    h3: ({ children }) => <h3 id={String(children).toLowerCase().replace(/[^\w]+/g, '-')} className="scroll-mt-32 text-lg font-semibold text-gray-200 mt-6 mb-3 flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-purple-500"/>{children}</h3>,
+    
+    // Text
+    p: ({ children }) => <p className="text-gray-300 leading-7 mb-4 last:mb-0">{children}</p>,
+    strong: ({ children }) => <strong className="font-semibold text-white bg-white/5 px-1 rounded">{children}</strong>,
+    em: ({ children }) => <em className="text-purple-300 not-italic">{children}</em>,
+    
+    // Lists
+    ul: ({ children }) => <ul className="space-y-2 mb-6 ml-1">{children}</ul>,
+    ol: ({ children }) => <ol className="space-y-2 mb-6 ml-1 list-decimal list-inside text-gray-400">{children}</ol>,
+    li: ({ children }) => (
+      <li className="group flex items-start gap-3 text-gray-300 pl-2 border-l-2 border-transparent hover:border-purple-500/50 transition-colors">
+        <span className="mt-[9px] h-1.5 w-1.5 rounded-full bg-gray-600 group-hover:bg-purple-400 transition-colors shrink-0" />
+        <span className="leading-7">{children}</span>
+      </li>
+    ),
+    
+    // Block Elements
+    blockquote: ({ children }) => (
+      <blockquote className="relative my-6 pl-6 py-1 border-l-2 border-purple-500 bg-gradient-to-r from-purple-500/10 to-transparent rounded-r-lg">
+        <div className="text-gray-300 italic">{children}</div>
+      </blockquote>
+    ),
+    code: ({ inline, className, children }) => inline 
+      ? <code className="px-1.5 py-0.5 rounded-md bg-white/10 text-purple-200 text-xs font-mono border border-white/10">{children}</code>
+      : <CodeBlock className={className}>{children}</CodeBlock>,
+    
+    // Links & Tables
+    a: ({ href, children }) => (
+      <a href={href} target="_blank" rel="noreferrer" className="text-purple-400 hover:text-purple-300 underline decoration-purple-500/30 underline-offset-4 transition-all inline-flex items-center gap-1">
+        {children} <ExternalLink className="w-3 h-3 opacity-50" />
+      </a>
+    ),
+    table: (props) => (
+      <div className="w-full overflow-x-auto my-6 rounded-xl border border-white/10 shadow-lg bg-[#0A0A0E]">
+        <table className="w-full text-left text-sm whitespace-nowrap" {...props} />
+      </div>
+    ),
+    thead: (props) => <thead className="bg-white/5 text-gray-100 font-medium border-b border-white/5" {...props} />,
+    tbody: (props) => <tbody className="divide-y divide-white/5" {...props} />,
+    tr: (props) => <tr className="hover:bg-white/5 transition-colors group" {...props} />,
+    th: (props) => <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-gray-400" {...props} />,
+    td: (props) => <td className="px-6 py-4 text-gray-300 group-hover:text-gray-100" {...props} />,
+  };
+
   const renderContent = () => {
-    if (!collapsibleSections) {
-      return (
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={markdownComponents}
-        >
-          {content}
-        </ReactMarkdown>
-      );
-    }
+    if (!collapsibleSections) return <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>{content}</ReactMarkdown>;
 
-    const sections = content.split(/(?=^## )/gm);
+    // Split content by H2
+    const parts = content.split(/(?=^## )/gm);
     
-    return sections.map((section, idx) => {
-      const headingMatch = section.match(/^## (.+)$/m);
-      
-      if (headingMatch) {
-        const title = headingMatch[1];
-        const sectionContent = section.replace(/^## .+$/m, '').trim();
-        const sectionId = title.toLowerCase().replace(/[^\w]+/g, '-');
-        const Icon = getSectionIcon(title);
-        const isOpen = sectionStates[sectionId] ?? allExpanded;
+    return parts.map((part, i) => {
+      const match = part.match(/^## (.+)$/m);
+      if (match) {
+        const sectionTitle = match[1];
+        const sectionBody = part.replace(/^## .+$/m, '').trim();
+        const id = sectionTitle.toLowerCase().replace(/[^\w]+/g, '-');
+        const isOpen = sectionStates[id] ?? allExpanded;
 
         return (
-          <CollapsibleSection 
-            key={idx} 
-            title={title} 
-            icon={Icon}
-            id={sectionId}
+          <CollapsibleSection
+            key={i}
+            id={id}
+            title={sectionTitle}
             isOpen={isOpen}
-            onToggle={() => toggleSection(sectionId)}
-            level={2}
+            onToggle={() => toggleSection(id)}
+            icon={getIcon(sectionTitle)}
           >
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={markdownComponents}
-            >
-              {sectionContent}
-            </ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>{sectionBody}</ReactMarkdown>
           </CollapsibleSection>
         );
       }
-
-      if (section.trim()) {
+      // Content before the first H2
+      if (part.trim()) {
         return (
-          <div key={idx} className="mb-6">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={markdownComponents}
-            >
-              {section}
-            </ReactMarkdown>
+          <div key={i} className="mb-8 prose-intro">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>{part}</ReactMarkdown>
           </div>
         );
       }
@@ -464,220 +332,130 @@ const MarkdownRenderer = ({
     });
   };
 
-  const markdownComponents = {
-    h1: ({ children }) => {
-      const id = String(children).toLowerCase().replace(/[^\w]+/g, '-');
-      return <AnimatedHeading level={1} id={id}>{children}</AnimatedHeading>;
-    },
-    h2: ({ children }) => {
-      if (!collapsibleSections) {
-        const id = String(children).toLowerCase().replace(/[^\w]+/g, '-');
-        return <AnimatedHeading level={2} id={id}>{children}</AnimatedHeading>;
-      }
-      return null;
-    },
-    h3: ({ children }) => {
-      const id = String(children).toLowerCase().replace(/[^\w]+/g, '-');
-      return <AnimatedHeading level={3} id={id}>{children}</AnimatedHeading>;
-    },
-    h4: ({ children }) => {
-      const id = String(children).toLowerCase().replace(/[^\w]+/g, '-');
-      return <AnimatedHeading level={4} id={id}>{children}</AnimatedHeading>;
-    },
-    
-    p: ({ children }) => {
-      const currentIndex = paragraphIndex++;
-      return <EnhancedParagraph animated={animated}>{children}</EnhancedParagraph>;
-    },
-    
-    strong: ({ children }) => (
-      <strong className="font-semibold text-white bg-gradient-to-r from-purple-500/15 to-blue-500/15 px-1.5 py-0.5 rounded-md border border-purple-500/20">
-        {children}
-      </strong>
-    ),
-    
-    em: ({ children }) => (
-      <em className="italic text-purple-300 not-italic font-medium">{children}</em>
-    ),
-    
-    ul: ({ children }) => {
-      listIndex = 0;
-      return (
-        <ul className="mb-5 space-y-1 pl-1">
-          {children}
-        </ul>
-      );
-    },
-    ol: ({ children }) => {
-      listIndex = 0;
-      return (
-        <ol className="mb-5 space-y-1 pl-1">
-          {children}
-        </ol>
-      );
-    },
-    li: ({ children, ordered }) => {
-      listIndex++;
-      return (
-        <InteractiveListItem ordered={ordered} index={listIndex}>
-          {children}
-        </InteractiveListItem>
-      );
-    },
-    
-    table: (props) => (
-      <div className="overflow-x-auto mb-6 rounded-xl border border-slate-700/50 shadow-xl">
-        <table className="min-w-full divide-y divide-slate-700" {...props} />
-      </div>
-    ),
-    thead: (props) => (
-      <thead className="bg-gradient-to-r from-slate-800/80 to-slate-800/50" {...props} />
-    ),
-    tbody: (props) => (
-      <tbody className="bg-slate-900/30 divide-y divide-slate-700/30" {...props} />
-    ),
-    tr: (props) => (
-      <tr className="hover:bg-purple-500/5 transition-colors duration-150" {...props} />
-    ),
-    th: (props) => (
-      <th className="px-5 py-4 text-left text-sm font-semibold text-slate-200 tracking-wide" {...props} />
-    ),
-    td: (props) => (
-      <td className="px-5 py-4 text-sm text-slate-300" {...props} />
-    ),
-    
-    code: ({ inline, className, children }) => {
-      if (inline) {
-        return (
-          <code className="bg-slate-800/70 text-purple-300 px-2 py-0.5 rounded-lg text-sm font-mono border border-slate-700/50 hover:border-purple-500/50 hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200">
-            {children}
-          </code>
-        );
-      }
-      return <CodeBlock className={className}>{children}</CodeBlock>;
-    },
-    pre: ({ children }) => <>{children}</>,
-    
-    a: ({ children, href }) => (
-      <a 
-        href={href}
-        className="inline-flex items-center gap-1 text-purple-400 hover:text-purple-300 underline decoration-purple-500/30 hover:decoration-purple-400 underline-offset-2 transition-all duration-200 group font-medium" 
-        target="_blank" 
-        rel="noopener noreferrer"
-      >
-        {children}
-        <ExternalLink className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
-      </a>
-    ),
-    
-    hr: () => (
-      <div className="my-10 flex items-center gap-4">
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
-        <div className="flex items-center gap-2 px-4">
-          <Star className="w-3 h-3 text-purple-500/50 animate-pulse" />
-          <Sparkles className="w-4 h-4 text-purple-400/70" />
-          <Star className="w-3 h-3 text-purple-500/50 animate-pulse" />
-        </div>
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
-      </div>
-    ),
-    
-    blockquote: ({ children }) => (
-      <blockquote className="relative my-6 pl-5 pr-5 py-5 border-l-4 border-purple-500 bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent rounded-r-xl shadow-lg">
-        <div className="text-slate-200 leading-relaxed">{children}</div>
-      </blockquote>
-    ),
-
-    input: ({ checked }) => (
-      <span className={`
-        inline-flex items-center justify-center w-5 h-5 rounded-md mr-3 border-2
-        transition-all duration-200
-        ${checked 
-          ? 'bg-purple-500 border-purple-500 text-white scale-110' 
-          : 'bg-slate-800 border-slate-600 hover:border-purple-500/50'
-        }
-      `}>
-        {checked && <Check className="w-3 h-3" />}
-      </span>
-    ),
-  };
-
   return (
-    <div className={`bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl ${className}`}>
-      {/* Header */}
-      {title && (
-        <div className="px-6 py-5 border-b border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 shadow-lg shadow-purple-500/20">
-                <Sparkles className="w-5 h-5 text-purple-400" />
+    <div className={`w-full ${className}`}>
+      {/* Container - Width constrained but responsive */}
+      <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-purple-500/30 via-white/10 to-transparent shadow-2xl overflow-hidden w-full">
+        
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-[#050509] rounded-2xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(168,85,247,0.15),rgba(255,255,255,0))] pointer-events-none" />
+        
+        {/* Main Content Card */}
+        <div className="relative min-h-[400px] w-full">
+          
+          {/* Header */}
+          <div className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-4 border-b border-white/10 bg-[#050509]/80 backdrop-blur-xl supports-[backdrop-filter]:bg-[#050509]/60">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10 border border-purple-500/20">
+                <Terminal className="h-4 w-4 text-purple-400" />
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-100">{title}</h2>
-                <p className="text-xs text-slate-400 mt-0.5">AI-powered analysis & insights</p>
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold text-gray-100 uppercase tracking-wider truncate">{title}</h2>
+                <div className="flex items-center gap-2 text-[10px] text-gray-500 font-mono">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  LIVE PREVIEW
+                </div>
               </div>
             </div>
+
             <div className="flex items-center gap-2">
-              {collapsibleSections && (
+              {/* Mobile TOC Toggle */}
+              {showTableOfContents && headings.length > 0 && (
                 <button
-                  onClick={toggleAllSections}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 hover:text-white transition-all duration-200 text-sm font-medium hover:scale-105"
+                  onClick={() => setMobileTocOpen(!mobileTocOpen)}
+                  className="xl:hidden p-2 rounded-lg bg-white/5 border border-white/5 text-gray-400 hover:text-white"
                 >
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${allExpanded ? 'rotate-0' : '-rotate-90'}`} />
-                  {allExpanded ? 'Collapse All' : 'Expand All'}
+                  {mobileTocOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
                 </button>
               )}
+              
+              {/* Collapse All (Desktop) */}
+              {collapsibleSections && (
+                <button
+                  onClick={toggleAll}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs text-gray-400 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+                >
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${allExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  {allExpanded ? 'Collapse' : 'Expand'}
+                </button>
+              )}
+              
               <CopyButton text={content} />
             </div>
           </div>
-        </div>
-      )}
 
-      <div className="flex">
-        {/* Table of Contents Sidebar */}
-        {showTableOfContents && headings.length > 0 && (
-          <div className="w-64 border-r border-slate-700/50 p-5 bg-slate-950/50 hidden lg:block sticky top-0 max-h-screen overflow-y-auto">
-            <h3 className="text-xs font-bold text-slate-500 mb-4 uppercase tracking-widest flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              Contents
-            </h3>
-            <nav className="space-y-1">
-              {headings.map((heading, i) => (
-                <a
-                  key={i}
-                  href={`#${heading.id}`}
-                  className={`
-                    flex items-center gap-2 py-2 px-3 rounded-lg text-sm transition-all duration-200
-                    ${heading.level === 1 ? 'font-semibold' : ''}
-                    ${heading.level === 2 ? 'ml-2' : ''}
-                    ${heading.level === 3 ? 'ml-4 text-xs' : ''}
-                    ${activeSection === heading.id 
-                      ? 'bg-purple-500/20 text-purple-300 border-l-2 border-purple-500 shadow-lg shadow-purple-500/10' 
-                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                    }
-                  `}
-                  onClick={() => setActiveSection(heading.id)}
-                >
-                  <span className="truncate">{heading.text}</span>
-                </a>
-              ))}
-            </nav>
+          {/* Mobile TOC Dropdown */}
+          {showTableOfContents && mobileTocOpen && (
+            <div className="xl:hidden border-b border-white/10 bg-[#0A0A0E] px-4 py-3 animate-in slide-in-from-top-2">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Jump to section</p>
+              <nav className="space-y-1 max-h-48 overflow-y-auto">
+                {headings.map((h, i) => (
+                  <a
+                    key={i}
+                    href={`#${h.id}`}
+                    onClick={() => setMobileTocOpen(false)}
+                    className="block py-2 px-3 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors truncate"
+                  >
+                    {h.text}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          )}
+
+          <div className="flex flex-col xl:flex-row">
+            {/* Desktop Sidebar TOC */}
+            {showTableOfContents && headings.length > 0 && (
+              <div className="hidden xl:block w-64 flex-shrink-0 border-r border-white/5 bg-black/20">
+                <div className="sticky top-20 p-5 max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
+                  <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <BookOpen className="w-3 h-3" /> Contents
+                  </h3>
+                  <nav className="space-y-0.5 relative">
+                    {/* Vertical line track */}
+                    <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-white/5 ml-3" />
+                    
+                    {headings.map((h, i) => {
+                      const isActive = activeSectionId === h.id;
+                      return (
+                        <a
+                          key={i} 
+                          href={`#${h.id}`}
+                          className={`
+                            group flex items-center gap-3 py-1.5 pr-3 rounded-r-lg text-xs transition-all border-l-[2px]
+                            ${h.level > 1 ? 'ml-0 pl-6' : 'pl-3'}
+                            ${isActive 
+                              ? 'border-purple-500 bg-purple-500/5 text-purple-200 font-medium' 
+                              : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-white/20'
+                            }
+                          `}
+                        >
+                          <span className="truncate">{h.text}</span>
+                        </a>
+                      );
+                    })}
+                  </nav>
+                </div>
+              </div>
+            )}
+
+            {/* Markdown Content Area */}
+            <div className="flex-1 min-w-0"> {/* min-w-0 prevents flex items from overflowing */}
+              <div className="px-4 py-6 sm:px-8 sm:py-8 max-w-full">
+                {renderContent()}
+              </div>
+            </div>
           </div>
-        )}
-
-        {/* Main Content */}
-        <div className="flex-1 px-6 py-6 overflow-x-hidden">
-          <div className="prose prose-invert prose-sm max-w-none">
-            {renderContent()}
+          
+          {/* Footer */}
+          <div className="px-4 sm:px-6 py-3 border-t border-white/5 bg-white/[0.02] flex items-center justify-between text-[10px] text-gray-600 font-mono uppercase tracking-wider">
+            <span>Generated via AimDiscover</span>
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline">Encrypted Connection</span>
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/50" />
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="px-6 py-3 border-t border-slate-700/50 bg-slate-950/50 flex items-center justify-between">
-        <span className="text-xs text-slate-500">Powered by Analytics • Interactive Documentation</span>
-        <div className="flex items-center gap-1.5">
-          <Zap className="w-3 h-3 text-yellow-500/50 animate-pulse" />
         </div>
       </div>
     </div>

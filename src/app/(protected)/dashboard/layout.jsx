@@ -26,6 +26,7 @@ import {
 
 export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const navigation = [
@@ -60,6 +61,8 @@ export default function DashboardLayout({ children }) {
     //   icon: BarChart3,
     // },
   ];
+
+
 
   const bottomNavigation = [
     {
@@ -97,7 +100,7 @@ export default function DashboardLayout({ children }) {
                 alt="login-image"
                 width={200}
                 height={200}
-                cover
+                cover="true"
                 className="object-cover opacity-80"
                 priority
               />
@@ -150,30 +153,54 @@ export default function DashboardLayout({ children }) {
               const Icon = item.icon;
               const isLogout = item.name === "Logout";
 
-              return isLogout ? (
-                <button
-                  key={item.name}
-                  onClick={() => handleLogout(router)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-purple-500/30 transition-all duration-300 group text-left"
-                >
-                  <Icon className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
-                  <span className="font-medium text-gray-400 group-hover:text-white transition-colors">
-                    {item.name}
-                  </span>
-                </button>
-              ) : (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-purple-500/30 transition-all duration-300 group"
-                >
-                  <Icon className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
-                  <span className="font-medium text-gray-400 group-hover:text-white transition-colors">
-                    {item.name}
-                  </span>
-                </Link>
-              );
-            })}
+             return isLogout ? (
+    <button
+      disabled={isLoading}
+      key={item.name}
+      onClick={handleLogout}
+      className={`
+        w-full flex items-center gap-3 px-4 py-3 rounded-xl 
+        hover:bg-white/5 border border-transparent hover:border-purple-500/30 
+        transition-all duration-300 group text-left
+        ${
+          isLoading
+            ? "opacity-70 cursor-not-allowed hover:scale-100"
+            : "hover:scale-[1.02]"
+        }
+      `}
+      aria-busy={isLoading}
+      aria-label={isLoading ? "Logging out…" : item.name}
+    >
+      {isLoading ? (
+        <>
+          <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
+          <span className="font-medium text-gray-400 group-hover:text-white transition-colors">
+            Logging out…
+          </span>
+        </>
+      ) : (
+        <>
+          <Icon className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
+          <span className="font-medium text-gray-400 group-hover:text-white transition-colors">
+            {item.name}
+          </span>
+        </>
+      )}
+    </button>
+  ) : (
+    <Link
+      key={item.name}
+      href={item.href}
+      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-purple-500/30 transition-all duration-300 group"
+    >
+      <Icon className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
+      <span className="font-medium text-gray-400 group-hover:text-white transition-colors">
+        {item.name}
+      </span>
+    </Link>
+  );
+}
+            )}
           </div>
 
           {/* User Profile */}
@@ -216,28 +243,53 @@ export default function DashboardLayout({ children }) {
               )}
             </button>
 
-
             {/* Right Actions */}
             <div className="flex items-center gap-10">
               {/* <button className="relative p-2 rounded-xl hover:bg-white/5 border border-white/10 transition-colors">
                 <Bell className="w-5 h-5 text-gray-400" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
               </button> */}
+              <Link href="/pricing">
+                <button
+                  className="relative z-10 
+    text-sm sm:text-md lg:text-md font-semibold tracking-wide 
+    overflow-hidden flex items-center justify-center gap-3 
+    px-6 py-3 rounded-2xl 
 
-              <button className="relative text-sm sm:text-lg lg:text-lg overflow-hidden flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-black to-slate-700 hover:from-purple-500 hover:to-purple-400 transition-all duration-300 shadow-lg shadow-purple-500/30">
-                <Globe className="text-purple-500" />
-                Upgrade
-                <BorderBeam
-                  size={40}
-                  initialOffset={20}
-                  className="from-transparent via-purple-500 to-transparent"
-                  transition={{
-                    type: "spring",
-                    stiffness: 60,
-                    damping: 20,
-                  }}
-                />
-              </button>
+    bg-gradient-to-br from-white/5 via-black/80 to-black/90 
+    
+  
+    border border-purple-500/10 
+    shadow-[0_0_25px_-10px_rgba(168,85,247,0.7)] 
+    
+   
+    text-gray-100 
+    
+  h
+    hover:border-purple-400/70 
+    hover:text-white 
+    hover:shadow-[0_0_35px_-10px_rgba(168,85,247,0.9)]
+    
+
+    transition-all duration-300 ease-in-out"
+                >
+                  <Globe className="w-5 h-5 text-purple-400 group-hover:text-white transition-colors duration-300" />
+
+                  <span className="relative">Upgrade</span>
+
+                  <BorderBeam
+                    size={70}
+                    initialOffset={5}
+                    color="#8B5CF6"
+                    transition={{
+                      type: "spring",
+                      stiffness: 80,
+                      damping: 20,
+                    }}
+                    className="from-transparent via-purple-500/80 to-transparent"
+                  />
+                </button>
+              </Link>
             </div>
           </div>
         </header>
