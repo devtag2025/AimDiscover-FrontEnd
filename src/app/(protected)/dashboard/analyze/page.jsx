@@ -590,7 +590,7 @@ export default function AnalyzePage() {
                       <section className="space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                            COGS $
+                            Cost of Goods Sold $ (COGS)
                           </label>
                         </div>
 
