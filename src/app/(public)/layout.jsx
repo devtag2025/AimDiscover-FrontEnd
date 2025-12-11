@@ -9,7 +9,7 @@ export default function PublicLayout({ children }) {
   const pathname = usePathname();
   
   const isHomePage = pathname === "/";
-
+console.log("public Layout");
   return (
     <div className="relative min-h-screen bg-black flex flex-col">
       <LoginHeader />

@@ -245,3 +245,9 @@ export const markets = [
   SA: "South America",       
   MEA: "Middle East & Africa" 
 };
+
+export const MAX_COGS_OPTIONS = [
+  { id: "5", label: "Up to $5 landed" },
+  { id: "7", label: "Up to $7 landed (recommended)" },
+  { id: "10", label: "Up to $10 landed (premium products)" },
+];

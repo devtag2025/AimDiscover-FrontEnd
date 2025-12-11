@@ -6,7 +6,6 @@ import { Clock } from "lucide-react";
 
 const SpikeTime = ({ spike_started_at }) => {
 
-  console.log(spike_started_at)
 
  
 
