@@ -93,7 +93,7 @@ export default function DashboardLayout({ children }) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500/20 scrollbar-track-transparent">
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {navigation.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -235,7 +235,7 @@ export default function DashboardLayout({ children }) {
               </button> */}
 
               {/* Upgrade Button */}
-              <Link href="/pricing" className="hidden sm:block">
+              <Link href="/dashboard/pricing" className="hidden sm:block">
                 <button className="relative overflow-hidden flex items-center justify-center gap-2 px-4 py-2 lg:px-6 lg:py-3 rounded-2xl bg-gradient-to-br from-white/5 via-black/80 to-black/90 border border-purple-500/10 shadow-[0_0_25px_-10px_rgba(168,85,247,0.7)] text-gray-100 hover:border-purple-400/70 hover:text-white hover:shadow-[0_0_35px_-10px_rgba(168,85,247,0.9)] transition-all duration-300 ease-in-out touch-manipulation">
                   <Globe className="w-4 h-4 lg:w-5 lg:h-5 text-purple-400" />
                   <span className="text-sm lg:text-base font-semibold">
