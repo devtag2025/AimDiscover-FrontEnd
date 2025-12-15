@@ -251,3 +251,34 @@ export const MAX_COGS_OPTIONS = [
   { id: "7", label: "Up to $7 landed (recommended)" },
   { id: "10", label: "Up to $10 landed (premium products)" },
 ];
+
+export const COUNTRY_NAMES = {
+US: "United States",
+UK: "United Kingdom",
+JP: "Japan",
+IN: "India",
+DE: "Germany",
+KR: "South Korea",
+CA: "Canada",
+AU: "Australia",
+NO: "Norway",
+FR: "France",
+IT: "Italy",
+BR: "Brazil",
+SG: "Singapore",
+ZA: "South Africa",
+CN: "China",
+MX: "Mexico",
+ES: "Spain",
+NL: "Netherlands",
+};
+
+export const CHART_COLORS = [
+  "#8b5cf6",
+  "#a78bfa",
+  "#c4b5fd",
+  "#ddd6fe",
+  "#ede9fe",
+  "#7c3aed",
+  "#6d28d9",
+];
