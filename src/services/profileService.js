@@ -2,6 +2,6 @@ import api from "@/lib/api";
 
 export const profileService = {
   getProfile:()=>api.get('/auth/profile'),
-  updateProfile:()=>api.put('/auth/profile'),
-  changePassword:()=>api.post('/auth/change-password')
+  updateProfile:(data)=>api.put('/auth/profile',data),
+  changePassword:(data)=>api.post('/auth/change-password',data)
 }

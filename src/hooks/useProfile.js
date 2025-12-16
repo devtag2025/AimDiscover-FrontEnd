@@ -2,15 +2,15 @@ import { profileService } from "@/services/profileService";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { handleError } from "@/utils/handleError";
 import { handleResponse } from "@/utils/handleResponse";
+import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 export function useProfile() {
-
-return useQuery({
-    queryKey:["my-profile"],
-    queryFn:profileService.getProfile,
+  return useQuery({
+    queryKey: ["my-profile"],
+    queryFn: profileService.getProfile,
     onSuccess: (response) => {
       const { message } = handleResponse(response);
-      console.log(message , "message")
+      console.log(message, "message");
       toast.success(message || "Profile fetched Successfully");
     },
     onError: (error) => {
@@ -18,30 +18,36 @@ return useQuery({
       toast.error(message || "Fetching Profile Failed.");
       console.error("Fetching Profile failed:", message);
     },
-})
-
+  });
 }
 
 export function useUpdateProfile() {
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: profileService.updateProfile,
+    mutationFn: (data) => {
+      return profileService.updateProfile(data);
+    },
+
     onSuccess: (response) => {
       const { message } = handleResponse(response);
+      console.log("✅ [useUpdateProfile] Extracted message:", message);
+
       toast.success(message || "Profile Updated Successfully!");
+
+      queryClient.invalidateQueries(["profile"]);
     },
 
     onError: (error) => {
       const message = handleError(error);
+      console.error("❌ [useUpdateProfile] Handled error message:", message);
+
       toast.error(message || "Profile Update failed.");
-      console.error("Profile Update Failed failed:", message);
     },
   });
-
 }
 
 export function useChangePassword() {
-
   return useMutation({
     mutationFn: profileService.changePassword,
     onSuccess: (response) => {
