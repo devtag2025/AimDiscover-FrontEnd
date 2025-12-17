@@ -1,43 +1,16 @@
 "use client";
 
-import { useState, Suspense, useEffect } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-  SelectItem,
-} from "@/components/ui/select";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { AlertCircle, Loader } from "lucide-react";
+import { Loader } from "lucide-react";
 import MarkdownRenderer from "@/components/analyze/MarkdownRenderer";
-import { MAX_COGS_OPTIONS, REGIONS } from "@/utils/StaticData";
 import Model3DViewer from "@/components/analyze/3d/Model3D";
+import AnalyzeConfig from "@/components/analyze/ConfigPanel/AnalyzeConfig";
 
 const Icons = {
-  Sparkles: () => (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 3.214L13 21l-2.286-6.857L5 12l5.714-3.214z"
-      />
-    </svg>
-  ),
   Cube: () => (
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -46,28 +19,8 @@ const Icons = {
       />
     </svg>
   ),
-  Download: () => (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-      />
-    </svg>
-  ),
   Chart: () => (
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -78,28 +31,14 @@ const Icons = {
   ),
 };
 
-
-
-
-
-
-
-// --- Main Component ---
-
 export default function AnalyzePage() {
-  const [categoryId, setCategoryId] = useState("");
-  const [region, setRegion] = useState("");
-  const [cogs, setCogs] = useState("");
-  const [productName, setProductName] = useState("");
-  const [artStyle, setArtStyle] = useState("realistic");
   const [analysisResult, setAnalysisResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState("");
   const [pollingInterval, setPollingInterval] = useState(null);
-
-  // ✅ FIX: Single source of truth for model data
   const [modelState, setModelState] = useState(null);
 
+  // Fetch categories
   const { data, isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -118,7 +57,7 @@ export default function AnalyzePage() {
     };
   }, [pollingInterval]);
 
-  // ✅ FIX: Deep merge function that preserves all fields
+  // Deep merge function for model data
   const deepMergeModelData = (existing, update) => {
     if (!existing) return update;
     if (!update) return existing;
@@ -126,19 +65,15 @@ export default function AnalyzePage() {
     return {
       ...existing,
       ...update,
-      // Preserve critical IDs
       id: update.id || existing.id,
       previewTaskId: update.previewTaskId || existing.previewTaskId,
       refineTaskId: update.refineTaskId || existing.refineTaskId,
-      // Preserve URLs (don't overwrite with undefined)
       modelUrls: update.modelUrls || existing.modelUrls,
       textureUrls: update.textureUrls || existing.textureUrls,
       thumbnailUrl: update.thumbnailUrl || existing.thumbnailUrl,
       videoUrl: update.videoUrl || existing.videoUrl,
-      // Always take latest status/progress
       status: update.status !== undefined ? update.status : existing.status,
-      progress:
-        update.progress !== undefined ? update.progress : existing.progress,
+      progress: update.progress !== undefined ? update.progress : existing.progress,
       stage: update.stage || existing.stage,
       message: update.message || existing.message,
       taskError: update.taskError || existing.taskError,
@@ -146,7 +81,7 @@ export default function AnalyzePage() {
   };
 
   const checkModelStatus = async (taskId) => {
-    const maxChecks = 60; // 15 minutes (60 * 15s)
+    const maxChecks = 60;
     let checks = 0;
 
     const intervalId = setInterval(async () => {
@@ -164,10 +99,8 @@ export default function AnalyzePage() {
           hasRefineId: !!newData.refineTaskId,
         });
 
-        // ✅ FIX: Use deep merge instead of spread
         setModelState((prev) => deepMergeModelData(prev, newData));
 
-        // Stop conditions
         if (
           newData.status === "SUCCEEDED" &&
           newData.stage === "refine" &&
@@ -192,24 +125,18 @@ export default function AnalyzePage() {
           setPollingInterval(null);
         }
       }
-    }, 15000); // 15 seconds
+    }, 15000);
 
     setPollingInterval(intervalId);
   };
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = async (payload) => {
     setError("");
     setAnalysisResult(null);
     setModelState(null);
-
-    if (!categoryId || !region) {
-      setError("Category and Region are required.");
-      return;
-    }
-
     setIsAnalyzing(true);
 
-    // Initialize model state immediately
+    // Initialize model state
     setModelState({
       status: "PENDING",
       stage: "preview",
@@ -218,28 +145,20 @@ export default function AnalyzePage() {
     });
 
     try {
-      const res = await api.post("/analysis/", {
-        categoryId,
-        region,
-        cogs,
-        productName: productName || undefined,
-        artStyle,
-      });
+      console.log("Sending analysis request with payload:", payload);
 
+      const res = await api.post("/analysis/", payload);
       const result = res.data;
 
       console.log("Initial API Response:", result);
 
       setAnalysisResult(result);
 
-      // ✅ FIX: Merge initial model data properly
       if (result?.model3D) {
         setModelState((prev) => deepMergeModelData(prev, result.model3D));
       }
 
-      // Start polling
-      const taskIdToTrack =
-        result?.model3D?.id || result?.model3D?.previewTaskId;
+      const taskIdToTrack = result?.model3D?.id || result?.model3D?.previewTaskId;
       if (taskIdToTrack) {
         console.log("🚀 Starting status polling for:", taskIdToTrack);
         checkModelStatus(taskIdToTrack);
@@ -248,9 +167,7 @@ export default function AnalyzePage() {
       }
     } catch (err) {
       console.error("Analysis error:", err);
-      setError(
-        err.response?.data?.message || "Analysis failed. Please try again."
-      );
+      setError(err.response?.data?.message || "Analysis failed. Please try again.");
       setModelState(null);
     } finally {
       setIsAnalyzing(false);
@@ -283,235 +200,15 @@ export default function AnalyzePage() {
 
       <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid lg:grid-cols-12 gap-8">
-          {/* Left Column - Configuration */}
+          {/* Left Column - Configuration Panel */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="sticky top-24">
-              <div className="absolute -inset-0.5 bg-gradient-to-b from-purple-500/20 to-transparent blur-xl opacity-50" />
-
-              <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-purple-500/30 via-white/10 to-transparent shadow-2xl">
-                <div className="relative h-full bg-[#050509] rounded-2xl overflow-hidden">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(168,85,247,0.15),rgba(255,255,255,0))]" />
-
-                  <div className="relative p-5 sm:p-6 backdrop-blur-3xl">
-                    <div className="flex items-start justify-between gap-4 mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 border border-white/10 shadow-inner">
-                          <Icons.Download className="h-4 w-4 text-purple-300" />
-                        </div>
-                        <div>
-                          <h2 className="text-[13px] font-bold text-gray-100 tracking-wide">
-                            CONFIGURATION
-                          </h2>
-                          <p className="text-[11px] text-gray-400 font-medium">
-                            Parameterize your scan
-                          </p>
-                        </div>
-                      </div>
-
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wider shadow-sm ${
-                          isAnalyzing
-                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
-                            : "bg-white/5 border-white/10 text-gray-400"
-                        }`}
-                      >
-                        <span className="relative flex h-1.5 w-1.5">
-                          {isAnalyzing && (
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                          )}
-                          <span
-                            className={`relative inline-flex rounded-full h-1.5 w-1.5 ${
-                              isAnalyzing ? "bg-emerald-400" : "bg-gray-500"
-                            }`}
-                          />
-                        </span>
-                        {isAnalyzing ? "Processing" : "Idle"}
-                      </span>
-                    </div>
-
-                    <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                      {/* Category Select */}
-                      <section className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                            Target Category
-                          </label>
-                          {categories?.length > 0 && (
-                            <span className="text-[10px] text-purple-400 font-mono">
-                              {categories.length} AVL
-                            </span>
-                          )}
-                        </div>
-
-                        <Select
-                          value={categoryId || undefined}
-                          onValueChange={setCategoryId}
-                          disabled={isLoading}
-                        >
-                          <SelectTrigger className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 h-auto text-xs sm:text-sm text-gray-100">
-                            <SelectValue
-                              placeholder={
-                                isLoading ? "Loading..." : "Select Category"
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent className="bg-[#0A0A0E] border-white/10 text-gray-200">
-                            {categories?.map((cat) => (
-                              <SelectItem
-                                key={cat.id}
-                                value={String(cat.id)}
-                                className="focus:bg-purple-500/20 focus:text-white"
-                              >
-                                {cat.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </section>
-
-                      {/* Region Select */}
-                      <section className="space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                          Region
-                        </label>
-                        <Select
-                          value={region}
-                          onValueChange={setRegion}
-                          disabled={isAnalyzing}
-                        >
-                          <SelectTrigger className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 h-auto text-xs sm:text-sm text-gray-100">
-                            <SelectValue placeholder="Select Region" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-[#0A0A0E] border-white/10 text-gray-200">
-                            {Object.entries(REGIONS).map(([code, name]) => (
-                              <SelectItem
-                                key={code}
-                                value={name}
-                                className="focus:bg-purple-500/20 focus:text-white"
-                              >
-                                {name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </section>
-
-                      {/* COGS */}
-                      <section className="space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                          Cost of Goods Sold $ (COGS)
-                        </label>
-                        <Select
-                          value={cogs}
-                          onValueChange={setCogs}
-                          disabled={isAnalyzing}
-                        >
-                          <SelectTrigger className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 h-auto text-xs sm:text-sm text-gray-100">
-                            <SelectValue placeholder="Select COGS $" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-[#0A0A0E] border-white/10 text-gray-200">
-                            {MAX_COGS_OPTIONS.map((option) => (
-                              <SelectItem
-                                key={option.id}
-                                value={option.id}
-                                className="focus:bg-purple-500/20 focus:text-white"
-                              >
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </section>
-
-                      {/* Product Name */}
-                      <section className="space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                          Product Name{" "}
-                          <span className="text-gray-600 font-normal normal-case">
-                            Optional
-                          </span>
-                        </label>
-                        <input
-                          type="text"
-                          value={productName}
-                          onChange={(e) => setProductName(e.target.value)}
-                          disabled={isAnalyzing}
-                          placeholder="e.g. CyberDesk V2"
-                          className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 text-xs sm:text-sm text-gray-100 placeholder:text-gray-600"
-                        />
-                      </section>
-
-                      {/* Art Style */}
-                      <section className="space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                          Render Style
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {["realistic"].map((style) => (
-                            <button
-                              key={style}
-                              type="button"
-                              onClick={() => setArtStyle(style)}
-                              disabled={isAnalyzing}
-                              className={`relative flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium transition-all duration-200 ${
-                                artStyle === style
-                                  ? "bg-purple-500/20 border-purple-500/50 text-white shadow-[0_0_15px_-3px_rgba(168,85,247,0.3)]"
-                                  : "bg-white/5 border-white/5 text-gray-500 hover:bg-white/10 hover:text-gray-300"
-                              }`}
-                            >
-                              <span className="capitalize">{style}</span>
-                              {artStyle === style && (
-                                <div className="h-1.5 w-1.5 rounded-full bg-purple-400 shadow-[0_0_5px_rgba(192,132,252,1)]" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </section>
-
-                      {error && (
-                        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-xs text-red-200 backdrop-blur-sm">
-                          <div className="flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-red-400" />
-                            <span>{error}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="pt-6 mt-2 border-t border-white/5">
-                      <button
-                        onClick={handleAnalyze}
-                        disabled={
-                          isAnalyzing || isLoading || !categoryId || !region
-                        }
-                        className={`group relative w-full overflow-hidden rounded-xl p-[1px] transition-all duration-300 ${
-                          !categoryId || !region
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:shadow-[0_0_20px_-5px_rgba(147,51,234,0.6)]"
-                        }`}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 animate-gradient-x" />
-                        <div className="relative h-full w-full rounded-xl bg-[#0A0A0E] px-4 py-3.5 transition-all group-hover:bg-transparent">
-                          <div className="flex items-center justify-center gap-2 text-sm font-semibold text-white">
-                            {isAnalyzing ? (
-                              <>
-                                <Loader className="h-4 w-4 animate-spin text-white/80" />
-                                <span>Initializing...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Icons.Sparkles className="h-4 w-4 text-purple-300 group-hover:text-white transition-colors" />
-                                <span>Generate Analysis</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AnalyzeConfig
+              categories={categories}
+              isLoading={isLoading}
+              isAnalyzing={isAnalyzing}
+              error={error}
+              onAnalyze={handleAnalyze}
+            />
           </div>
 
           {/* Right Column - Results */}
@@ -538,13 +235,10 @@ export default function AnalyzePage() {
                   {(modelState.status === "PENDING" ||
                     modelState.status === "IN_PROGRESS" ||
                     modelState.status === "REFINING" ||
-                    (modelState.status === "SUCCEEDED" &&
-                      modelState.stage !== "refine")) && (
+                    (modelState.status === "SUCCEEDED" && modelState.stage !== "refine")) && (
                     <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2 py-1 rounded border border-yellow-500/20 font-mono flex items-center gap-1">
                       <Loader className="h-3 w-3 animate-spin" />
-                      {modelState.stage === "refine"
-                        ? "REFINING"
-                        : "GENERATING"}
+                      {modelState.stage === "refine" ? "REFINING" : "GENERATING"}
                     </span>
                   )}
 
@@ -566,17 +260,12 @@ export default function AnalyzePage() {
                   <span className="text-blue-500">
                     <Icons.Chart />
                   </span>
-                  <h2 className="text-xl font-bold text-white">
-                    Market Intelligence
-                  </h2>
+                  <h2 className="text-xl font-bold text-white">Market Intelligence</h2>
                 </div>
 
                 <div className="bg-[#111]/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl">
                   <div className="prose prose-invert prose-purple max-w-none prose-headings:font-bold prose-h3:text-purple-300 prose-strong:text-white prose-p:text-gray-300 prose-li:text-gray-300">
-                    <MarkdownRenderer
-                      content={analysisResult.insights}
-                      title=""
-                    />
+                    <MarkdownRenderer content={analysisResult.insights} title="" />
                   </div>
                 </div>
               </section>
@@ -600,12 +289,10 @@ export default function AnalyzePage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-white mb-2">
-                  Ready to Analyze
-                </h3>
+                <h3 className="text-lg font-medium text-white mb-2">Ready to Analyze</h3>
                 <p className="text-gray-500 max-w-xs text-sm">
-                  Configure your product parameters on the left to generate
-                  market insights and 3D visualizations.
+                  Configure your product parameters on the left to generate market insights and 3D
+                  visualizations.
                 </p>
               </div>
             )}

@@ -238,19 +238,19 @@ export const markets = [
     { icon: MessageCircle, url: "https://discord.gg/yourserver" },
   ];
 
- export const REGIONS = {
-  NA: "North America",       
-  EU: "Europe",
-  AP: "Asia-Pacific",        
-  SA: "South America",       
-  MEA: "Middle East & Africa" 
-};
+//  export const REGIONS = {
+//   NA: "North America",       
+//   EU: "Europe",
+//   AP: "Asia-Pacific",        
+//   SA: "South America",       
+//   MEA: "Middle East & Africa" 
+// };
 
-export const MAX_COGS_OPTIONS = [
-  { id: "5", label: "Up to $5 landed" },
-  { id: "7", label: "Up to $7 landed (recommended)" },
-  { id: "10", label: "Up to $10 landed (premium products)" },
-];
+// export const MAX_COGS_OPTIONS = [
+//   { id: "5", label: "Up to $5 landed" },
+//   { id: "7", label: "Up to $7 landed (recommended)" },
+//   { id: "10", label: "Up to $10 landed (premium products)" },
+// ];
 
 export const COUNTRY_NAMES = {
 US: "United States",
