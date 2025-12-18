@@ -256,7 +256,7 @@ export default function DashboardLayout({ children }) {
               </Link>
 
               {/* Mobile Upgrade Icon */}
-              <Link href="/pricing" className="sm:hidden">
+              <Link href="/dashboard/pricing" className="sm:hidden">
                 <button
                   className="p-2 rounded-xl bg-purple-500/20 border border-purple-500/50 touch-manipulation"
                   aria-label="Upgrade plan"
