@@ -283,7 +283,7 @@ export default function AnalyzePage() {
                   <div className="relative bg-[#0A0A0E] rounded-2xl overflow-hidden border border-white/5">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.1),rgba(255,255,255,0))]" />
                     
-                    <div className="relative min-h-[500px] max-h-[600px] overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                    <div className="relative min-h-[500px] max-h-full overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                       {analysisResult?.insights ? (
                         <div className="prose prose-invert prose-blue max-w-none prose-headings:font-bold prose-h2:text-blue-300 prose-h3:text-blue-400 prose-strong:text-white prose-p:text-gray-300 prose-li:text-gray-300">
                           <MarkdownRenderer content={analysisResult.insights} title="" />
