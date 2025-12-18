@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { Loader } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import MarkdownRenderer from "@/components/analyze/MarkdownRenderer";
 import Model3DViewer from "@/components/analyze/3d/Model3D";
 import AnalyzeConfig from "@/components/analyze/ConfigPanel/AnalyzeConfig";
@@ -38,7 +39,7 @@ export default function AnalyzePage() {
   const [pollingInterval, setPollingInterval] = useState(null);
   const [modelState, setModelState] = useState(null);
 
-  // Fetch categories
+  // Fetch categories dynamically
   const { data, isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -178,8 +179,8 @@ export default function AnalyzePage() {
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-purple-500/30">
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#050505] to-[#050505] pointer-events-none" />
 
-      <header className="relative border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl z-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center gap-3">
+      <header className="relative border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl z-10">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center gap-3">
           <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-2 rounded-lg shadow-lg shadow-purple-500/20">
             <Icons.Chart />
           </div>
@@ -198,10 +199,10 @@ export default function AnalyzePage() {
         </div>
       </header>
 
-      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid lg:grid-cols-12 gap-8">
-          {/* Left Column - Configuration Panel */}
-          <div className="lg:col-span-4 space-y-6">
+      <main className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          {/* Configuration Section - Top (Horizontal Layout) */}
+          <section>
             <AnalyzeConfig
               categories={categories}
               isLoading={isLoading}
@@ -209,70 +210,104 @@ export default function AnalyzePage() {
               error={error}
               onAnalyze={handleAnalyze}
             />
-          </div>
+          </section>
 
-          {/* Right Column - Results */}
-          <div className="lg:col-span-8 space-y-8">
-            {/* 3D Model Section */}
-            {modelState && (
-              <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          {/* Results Section - Bottom (3D Viewer + Insights Side by Side) */}
+          {(modelState || analysisResult || isAnalyzing) && (
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 3D Model Viewer - Left */}
+              <div className="animate-in fade-in slide-in-from-left duration-700">
                 <div className="flex items-center justify-between mb-4 px-1">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <span className="text-purple-500">
-                      <Icons.Cube />
-                    </span>
-                    3D Prototype
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Icons.Cube />
+                    <span>3D Prototype</span>
                   </h2>
 
-                  {modelState.status === "SUCCEEDED" &&
-                    modelState.stage === "refine" &&
-                    modelState.textureUrls && (
-                      <span className="text-xs bg-green-500/10 text-green-400 px-2 py-1 rounded border border-green-500/20 font-mono">
+                  {modelState?.status === "SUCCEEDED" &&
+                    modelState?.stage === "refine" &&
+                    modelState?.textureUrls && (
+                      <span className="text-xs bg-green-500/10 text-green-400 px-2.5 py-1 rounded-md border border-green-500/20 font-mono">
                         COMPLETED
                       </span>
                     )}
 
-                  {(modelState.status === "PENDING" ||
-                    modelState.status === "IN_PROGRESS" ||
-                    modelState.status === "REFINING" ||
-                    (modelState.status === "SUCCEEDED" && modelState.stage !== "refine")) && (
-                    <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2 py-1 rounded border border-yellow-500/20 font-mono flex items-center gap-1">
+                  {(modelState?.status === "PENDING" ||
+                    modelState?.status === "IN_PROGRESS" ||
+                    modelState?.status === "REFINING" ||
+                    (modelState?.status === "SUCCEEDED" && modelState?.stage !== "refine")) && (
+                    <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2.5 py-1 rounded-md border border-yellow-500/20 font-mono flex items-center gap-1.5">
                       <Loader className="h-3 w-3 animate-spin" />
-                      {modelState.stage === "refine" ? "REFINING" : "GENERATING"}
+                      {modelState?.stage === "refine" ? "REFINING" : "GENERATING"}
                     </span>
                   )}
 
-                  {modelState.status === "FAILED" && (
-                    <span className="text-xs bg-red-500/10 text-red-400 px-2 py-1 rounded border border-red-500/20 font-mono">
+                  {modelState?.status === "FAILED" && (
+                    <span className="text-xs bg-red-500/10 text-red-400 px-2.5 py-1 rounded-md border border-red-500/20 font-mono">
                       FAILED
                     </span>
                   )}
                 </div>
 
-                <Model3DViewer modelData={modelState} />
-              </section>
-            )}
-
-            {/* Insights Section */}
-            {analysisResult?.insights && (
-              <section className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
-                <div className="flex items-center gap-2 mb-4 px-1">
-                  <span className="text-blue-500">
-                    <Icons.Chart />
-                  </span>
-                  <h2 className="text-xl font-bold text-white">Market Intelligence</h2>
-                </div>
-
-                <div className="bg-[#111]/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl">
-                  <div className="prose prose-invert prose-purple max-w-none prose-headings:font-bold prose-h3:text-purple-300 prose-strong:text-white prose-p:text-gray-300 prose-li:text-gray-300">
-                    <MarkdownRenderer content={analysisResult.insights} title="" />
+                {/* 3D Viewer Container */}
+                <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-purple-500/30 via-white/10 to-transparent">
+                  <div className="relative bg-[#0A0A0E] rounded-2xl overflow-hidden border border-white/5">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(168,85,247,0.1),rgba(255,255,255,0))]" />
+                    
+                    <div className="relative min-h-[500px] flex items-center justify-center p-8">
+                      {modelState ? (
+                        <Model3DViewer modelData={modelState} />
+                      ) : (
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-gradient-to-tr from-gray-800 to-black rounded-full flex items-center justify-center mb-4 mx-auto border border-white/5">
+                            <Icons.Cube />
+                          </div>
+                          <p className="text-gray-500 text-sm">
+                            {isAnalyzing ? "Generating 3D model..." : "No 3D model generated yet"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </section>
-            )}
+              </div>
 
-            {/* Empty State */}
-            {!modelState && !analysisResult && !isAnalyzing && (
+              {/* Detailed Insights - Right */}
+              <div className="animate-in fade-in slide-in-from-right duration-700">
+                <div className="flex items-center gap-2 mb-4 px-1">
+                  <LucideIcons.FileText className="h-5 w-5 text-blue-500" />
+                  <h2 className="text-lg font-bold text-white">Market Intelligence</h2>
+                </div>
+
+                {/* Insights Container */}
+                <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-blue-500/30 via-white/10 to-transparent">
+                  <div className="relative bg-[#0A0A0E] rounded-2xl overflow-hidden border border-white/5">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.1),rgba(255,255,255,0))]" />
+                    
+                    <div className="relative min-h-[500px] max-h-[600px] overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                      {analysisResult?.insights ? (
+                        <div className="prose prose-invert prose-blue max-w-none prose-headings:font-bold prose-h2:text-blue-300 prose-h3:text-blue-400 prose-strong:text-white prose-p:text-gray-300 prose-li:text-gray-300">
+                          <MarkdownRenderer content={analysisResult.insights} title="" />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-center py-20">
+                          <div className="w-16 h-16 bg-gradient-to-tr from-gray-800 to-black rounded-full flex items-center justify-center mb-4 border border-white/5">
+                            <LucideIcons.FileText className="h-6 w-6 text-gray-600" />
+                          </div>
+                          <p className="text-gray-500 text-sm">
+                            {isAnalyzing ? "Generating market insights..." : "No insights generated yet"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Empty State - When Nothing is Generated */}
+          {!modelState && !analysisResult && !isAnalyzing && (
+            <section className="animate-in fade-in duration-700">
               <div className="h-[400px] flex flex-col items-center justify-center text-center border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.02]">
                 <div className="w-20 h-20 bg-gradient-to-tr from-gray-800 to-black rounded-full flex items-center justify-center mb-6 shadow-xl border border-white/5">
                   <svg
@@ -290,13 +325,13 @@ export default function AnalyzePage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium text-white mb-2">Ready to Analyze</h3>
-                <p className="text-gray-500 max-w-xs text-sm">
-                  Configure your product parameters on the left to generate market insights and 3D
-                  visualizations.
+                <p className="text-gray-500 max-w-md text-sm">
+                  Configure your product parameters above and click "Generate Market Analysis" to
+                  create 3D visualizations and market insights.
                 </p>
               </div>
-            )}
-          </div>
+            </section>
+          )}
         </div>
       </main>
     </div>
