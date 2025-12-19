@@ -5,10 +5,10 @@ import toast from "react-hot-toast";
 const handleLogout = async(router)=>{
 
     try {
-       await AxiosInstance.post('/auth/logout' , {}, {withCredentials:true})
+    //    await AxiosInstance.post('/auth/logout' , {}, {withCredentials:true})
        useAuthStore.getState().resetAuth();
        localStorage.clear("accessToken")
-       router.push('/') 
+    //    router.push('/') 
     } catch (error) { 
         toast.error('Logout Failed',error)
         console.error('Logout Failed',error);
