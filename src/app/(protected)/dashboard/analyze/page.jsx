@@ -8,6 +8,8 @@ import * as LucideIcons from "lucide-react";
 import MarkdownRenderer from "@/components/analyze/MarkdownRenderer";
 import Model3DViewer from "@/components/analyze/3d/Model3D";
 import AnalyzeConfig from "@/components/analyze/ConfigPanel/AnalyzeConfig";
+import InsightsCard from "@/components/analyze/InsightsCard";
+import ChatInterface from "@/components/analyze/ChatInterface";
 
 const Icons = {
   Cube: () => (
@@ -33,13 +35,6 @@ const Icons = {
 };
 
 export default function AnalyzePage() {
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [error, setError] = useState("");
-  const [pollingInterval, setPollingInterval] = useState(null);
-  const [modelState, setModelState] = useState(null);
-
-  // Fetch categories dynamically
   const { data, isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -50,6 +45,30 @@ export default function AnalyzePage() {
 
   const categories = data?.categories || [];
 
+  // ============================================
+  // STATE MANAGEMENT
+  // ============================================
+  
+  // Base configuration (set once, doesn't change during refinement)
+  const [baseConfig, setBaseConfig] = useState(null);
+  
+  // Current analysis result
+  const [analysisResult, setAnalysisResult] = useState(null);
+  
+  // Refinement state
+  const [showChatInput, setShowChatInput] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState([]);
+  
+  // UI states
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isGenerating3D, setIsGenerating3D] = useState(false);
+  const [error, setError] = useState("");
+  
+  // 3D model state
+  const [modelState, setModelState] = useState(null);
+  const [pollingInterval, setPollingInterval] = useState(null);
+
+  // Cleanup polling on unmount
   useEffect(() => {
     return () => {
       if (pollingInterval) {
@@ -58,7 +77,154 @@ export default function AnalyzePage() {
     };
   }, [pollingInterval]);
 
-  // Deep merge function for model data
+  // ============================================
+  // HANDLER 1: Initial Analysis
+  // ============================================
+  const handleInitialAnalyze = async (config) => {
+    setError("");
+    setAnalysisResult(null);
+    setModelState(null);
+    setShowChatInput(false);
+    setConversationHistory([]);
+    setIsAnalyzing(true);
+
+    // Store base config for future refinements
+    setBaseConfig(config);
+
+    try {
+      console.log("📊 Initial analysis request:", config);
+
+      // Call new insights endpoint (no refinementContext)
+      const res = await api.post("/analysis/insights", config);
+      const result = res.data;
+
+      console.log("✅ Initial insights received");
+
+      setAnalysisResult(result);
+      
+      // Add to conversation history
+      setConversationHistory([
+        {
+          type: "system",
+          message: "Initial analysis generated",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+
+    } catch (err) {
+      console.error("❌ Analysis error:", err);
+      setError(err.response?.data?.message || "Analysis failed");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // ============================================
+  // HANDLER 2: Refinement (with chat context)
+  // ============================================
+  const handleRefineInsights = async (refinementContext) => {
+    if (!baseConfig) {
+      setError("No base configuration found");
+      return;
+    }
+
+    if (!refinementContext || !refinementContext.trim()) {
+      setError("Please provide refinement instructions");
+      return;
+    }
+
+    setError("");
+    setIsAnalyzing(true);
+
+    try {
+      console.log("🔄 Refining insights with context:", refinementContext);
+
+      // Combine base config with refinement context
+      const refinementPayload = {
+        ...baseConfig,
+        refinementContext: refinementContext.trim(),
+      };
+
+      const res = await api.post("/analysis/insights", refinementPayload);
+      const result = res.data;
+
+      console.log("✅ Refined insights received");
+
+      setAnalysisResult(result);
+
+      // Add to conversation history
+      setConversationHistory((prev) => [
+        ...prev,
+        {
+          type: "user",
+          message: refinementContext,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          type: "system",
+          message: "Insights refined based on your feedback",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+
+    } catch (err) {
+      console.error("❌ Refinement error:", err);
+      setError(err.response?.data?.message || "Refinement failed");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // ============================================
+  // HANDLER 3: Generate 3D Model
+  // ============================================
+  const handleGenerate3D = async () => {
+    if (!analysisResult?.meshPrompt) {
+      setError("No mesh prompt available");
+      return;
+    }
+
+    setError("");
+    setModelState({
+      status: "PENDING",
+      stage: "preview",
+      progress: 5,
+      message: "Initializing 3D generation...",
+    });
+    setIsGenerating3D(true);
+
+    try {
+      console.log("🎨 Generating 3D model");
+
+      const res = await api.post("/analysis/generate-3d", {
+        meshPrompt: analysisResult.meshPrompt,
+        artStyle: "realistic",
+      });
+
+      const result = res.data;
+
+      if (result?.model3D) {
+        setModelState((prev) => deepMergeModelData(prev, result.model3D));
+      }
+
+      const taskId = result?.model3D?.id || result?.model3D?.previewTaskId;
+      if (taskId) {
+        console.log("🚀 Starting 3D polling:", taskId);
+        checkModelStatus(taskId);
+      }
+
+    } catch (err) {
+      console.error("❌ 3D generation error:", err);
+      setError(err.response?.data?.message || "3D generation failed");
+      setModelState(null);
+    } finally {
+      setIsGenerating3D(false);
+    }
+  };
+
+  // ============================================
+  // HELPER: Deep merge model data
+  // ============================================
   const deepMergeModelData = (existing, update) => {
     if (!existing) return update;
     if (!update) return existing;
@@ -81,6 +247,9 @@ export default function AnalyzePage() {
     };
   };
 
+  // ============================================
+  // HELPER: Check 3D model status (polling)
+  // ============================================
   const checkModelStatus = async (taskId) => {
     const maxChecks = 60;
     let checks = 0;
@@ -96,8 +265,6 @@ export default function AnalyzePage() {
           stage: newData.stage,
           status: newData.status,
           progress: newData.progress,
-          hasTextures: !!newData.textureUrls,
-          hasRefineId: !!newData.refineTaskId,
         });
 
         setModelState((prev) => deepMergeModelData(prev, newData));
@@ -126,59 +293,16 @@ export default function AnalyzePage() {
           setPollingInterval(null);
         }
       }
-    }, 15000);
+    }, 15000); 
 
     setPollingInterval(intervalId);
-  };
-
-  const handleAnalyze = async (payload) => {
-    setError("");
-    setAnalysisResult(null);
-    setModelState(null);
-    setIsAnalyzing(true);
-
-    // Initialize model state
-    setModelState({
-      status: "PENDING",
-      stage: "preview",
-      progress: 5,
-      message: "Initializing 3D generation pipeline...",
-    });
-
-    try {
-      console.log("Sending analysis request with payload:", payload);
-
-      const res = await api.post("/analysis/", payload);
-      const result = res.data;
-
-      console.log("Initial API Response:", result);
-
-      setAnalysisResult(result);
-
-      if (result?.model3D) {
-        setModelState((prev) => deepMergeModelData(prev, result.model3D));
-      }
-
-      const taskIdToTrack = result?.model3D?.id || result?.model3D?.previewTaskId;
-      if (taskIdToTrack) {
-        console.log("🚀 Starting status polling for:", taskIdToTrack);
-        checkModelStatus(taskIdToTrack);
-      } else {
-        console.error("❌ No task ID found in response!");
-      }
-    } catch (err) {
-      console.error("Analysis error:", err);
-      setError(err.response?.data?.message || "Analysis failed. Please try again.");
-      setModelState(null);
-    } finally {
-      setIsAnalyzing(false);
-    }
   };
 
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-purple-500/30">
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#050505] to-[#050505] pointer-events-none" />
 
+      {/* Header */}
       <header className="relative border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl z-10">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center gap-3">
           <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-2 rounded-lg shadow-lg shadow-purple-500/20">
@@ -201,137 +325,50 @@ export default function AnalyzePage() {
 
       <main className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
-          {/* Configuration Section - Top (Horizontal Layout) */}
+          
+          {/* Configuration Panel */}
           <section>
             <AnalyzeConfig
               categories={categories}
               isLoading={isLoading}
               isAnalyzing={isAnalyzing}
               error={error}
-              onAnalyze={handleAnalyze}
+              onAnalyze={handleInitialAnalyze}
             />
           </section>
 
-          {/* Results Section - Bottom (3D Viewer + Insights Side by Side) */}
-          {(modelState || analysisResult || isAnalyzing) && (
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* 3D Model Viewer - Left */}
-              <div className="animate-in fade-in slide-in-from-left duration-700">
-                <div className="flex items-center justify-between mb-4 px-1">
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Icons.Cube />
-                    <span>3D Prototype</span>
-                  </h2>
+          {/* Results Section */}
+          {analysisResult && (
+            <section className="space-y-6">
+              
+              {/* Insights Card with Action Buttons */}
+              <InsightsCard
+                insights={analysisResult.insights}
+                isAnalyzing={isAnalyzing}
+                onGenerate3D={handleGenerate3D}
+                onRefine={() => setShowChatInput(true)}
+                conversationHistory={conversationHistory}
+              />
 
-                  {modelState?.status === "SUCCEEDED" &&
-                    modelState?.stage === "refine" &&
-                    modelState?.textureUrls && (
-                      <span className="text-xs bg-green-500/10 text-green-400 px-2.5 py-1 rounded-md border border-green-500/20 font-mono">
-                        COMPLETED
-                      </span>
-                    )}
+              {/* Chat Interface (shows after user clicks "Refine") */}
+              {showChatInput && (
+                <ChatInterface
+                  onRefine={handleRefineInsights}
+                  isRefining={isAnalyzing}
+                  conversationHistory={conversationHistory}
+                />
+              )}
 
-                  {(modelState?.status === "PENDING" ||
-                    modelState?.status === "IN_PROGRESS" ||
-                    modelState?.status === "REFINING" ||
-                    (modelState?.status === "SUCCEEDED" && modelState?.stage !== "refine")) && (
-                    <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2.5 py-1 rounded-md border border-yellow-500/20 font-mono flex items-center gap-1.5">
-                      <Loader className="h-3 w-3 animate-spin" />
-                      {modelState?.stage === "refine" ? "REFINING" : "GENERATING"}
-                    </span>
-                  )}
-
-                  {modelState?.status === "FAILED" && (
-                    <span className="text-xs bg-red-500/10 text-red-400 px-2.5 py-1 rounded-md border border-red-500/20 font-mono">
-                      FAILED
-                    </span>
-                  )}
+              {/* 3D Viewer (shows after 3D generation starts) */}
+              {modelState && (
+                <div className="animate-in fade-in slide-in-from-bottom duration-700">
+                  <Model3DViewer modelData={modelState} />
                 </div>
+              )}
 
-                {/* 3D Viewer Container */}
-                <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-purple-500/30 via-white/10 to-transparent">
-                  <div className="relative bg-[#0A0A0E] rounded-2xl overflow-hidden border border-white/5">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(168,85,247,0.1),rgba(255,255,255,0))]" />
-                    
-                    <div className="relative min-h-[500px] flex items-center justify-center p-8">
-                      {modelState ? (
-                        <Model3DViewer modelData={modelState} />
-                      ) : (
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-gradient-to-tr from-gray-800 to-black rounded-full flex items-center justify-center mb-4 mx-auto border border-white/5">
-                            <Icons.Cube />
-                          </div>
-                          <p className="text-gray-500 text-sm">
-                            {isAnalyzing ? "Generating 3D model..." : "No 3D model generated yet"}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Detailed Insights - Right */}
-              <div className="animate-in fade-in slide-in-from-right duration-700">
-                <div className="flex items-center gap-2 mb-4 px-1">
-                  <LucideIcons.FileText className="h-5 w-5 text-blue-500" />
-                  <h2 className="text-lg font-bold text-white">Market Intelligence</h2>
-                </div>
-
-                {/* Insights Container */}
-                <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-blue-500/30 via-white/10 to-transparent">
-                  <div className="relative bg-[#0A0A0E] rounded-2xl overflow-hidden border border-white/5">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.1),rgba(255,255,255,0))]" />
-                    
-                    <div className="relative min-h-[500px] max-h-full overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                      {analysisResult?.insights ? (
-                        <div className="prose prose-invert prose-blue max-w-none prose-headings:font-bold prose-h2:text-blue-300 prose-h3:text-blue-400 prose-strong:text-white prose-p:text-gray-300 prose-li:text-gray-300">
-                          <MarkdownRenderer content={analysisResult.insights} title="" />
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center py-20">
-                          <div className="w-16 h-16 bg-gradient-to-tr from-gray-800 to-black rounded-full flex items-center justify-center mb-4 border border-white/5">
-                            <LucideIcons.FileText className="h-6 w-6 text-gray-600" />
-                          </div>
-                          <p className="text-gray-500 text-sm">
-                            {isAnalyzing ? "Generating market insights..." : "No insights generated yet"}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </section>
           )}
 
-          {/* Empty State - When Nothing is Generated */}
-          {!modelState && !analysisResult && !isAnalyzing && (
-            <section className="animate-in fade-in duration-700">
-              <div className="h-[400px] flex flex-col items-center justify-center text-center border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.02]">
-                <div className="w-20 h-20 bg-gradient-to-tr from-gray-800 to-black rounded-full flex items-center justify-center mb-6 shadow-xl border border-white/5">
-                  <svg
-                    className="w-8 h-8 text-gray-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">Ready to Analyze</h3>
-                <p className="text-gray-500 max-w-md text-sm">
-                  Configure your product parameters above and click "Generate Market Analysis" to
-                  create 3D visualizations and market insights.
-                </p>
-              </div>
-            </section>
-          )}
         </div>
       </main>
     </div>

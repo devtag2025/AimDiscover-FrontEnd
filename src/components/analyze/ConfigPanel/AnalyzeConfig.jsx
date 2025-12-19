@@ -38,6 +38,7 @@ import {
   OUTPUT_DETAIL_OPTIONS,
   DEFAULT_ANALYSIS_CONFIG,
 } from "@/utils/AnalyzeOptions";
+import { Ghost } from "lucide-react";
 
 const Icons = {
   Sparkles: () => (
@@ -674,11 +675,11 @@ export default function AnalyzeConfig({
       )}
 
       {/* Generate Button */}
-      <div className="relative rounded-xl p-[1px] bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500">
+      <div className="relative rounded-xl p-[1px] bg-gradient-to-r from-slate-700 via-purple-800 to-fuchsia-700">
         <button
           onClick={handleSubmit}
           disabled={isAnalyzing || isLoading || !categoryId || !isAnalysisSettingsComplete}
-          className={`group relative w-full overflow-hidden rounded-xl bg-[#0A0A0E] px-6 py-4 transition-all ${
+          className={`group  relative w-full overflow-hidden rounded-xl bg-[#0A0A0E] lg:px-6 lg:py-4 px-2 py-2 transition-all ${
             (!categoryId || !isAnalysisSettingsComplete) ? "opacity-50 cursor-not-allowed" : "hover:bg-transparent"
           }`}
         >
@@ -690,8 +691,8 @@ export default function AnalyzeConfig({
               </>
             ) : (
               <>
-                <Icons.Sparkles />
-                <span>
+                <Ghost className="lg:text-2xl text-xs" />
+                <span className="lg:text-2xl text-xs">
                   {!isAnalysisSettingsComplete 
                     ? "Complete All Sections to Continue" 
                     : "Generate Market Analysis"}
