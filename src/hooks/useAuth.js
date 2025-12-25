@@ -4,6 +4,9 @@ import { handleError } from "@/utils/handleError";
 import { handleResponse } from "@/utils/handleResponse";
 import { toast } from "react-hot-toast";
 import { useAuthStore } from "@/stores/authStore";
+
+
+
 export function useRegister() {
   return useMutation({
     mutationFn: AuthService.register,
@@ -20,7 +23,14 @@ export function useRegister() {
 }
 
 export function useLogin() {
-  const { setAuth } = useAuthStore();
+    const {
+    setUser,
+    setToken,
+    setAuth,
+    setLoading,
+    setError,
+    setSuccess,
+  } = useAuthStore();
 
   return useMutation({
     mutationFn: AuthService.login,
@@ -34,7 +44,11 @@ export function useLogin() {
       if (accessToken) {
         localStorage.setItem("accessToken", accessToken);
       }
-
+      const user = data?.data?.user
+      const token = data?.data?.token
+      console.log(user,token);
+      setUser(user);
+      setToken(token);
       setAuth(true);
       toast.success(message || "Login successful!");
 
