@@ -10,20 +10,14 @@ import { BorderBeam } from "@/components/common/BorderBeam";
 import {
   LayoutDashboard,
   Search,
-  TrendingUp,
-  Box,
-  BookmarkCheck,
   Settings,
   LogOut,
   Menu,
   X,
-  Sparkles,
-  BarChart3,
   Globe,
-  User,
-  Bell,
   Loader2,
 } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
 import { DollarSign } from "lucide-react";
 
 export default function DashboardLayout({ children }) {
@@ -31,7 +25,8 @@ export default function DashboardLayout({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-
+const user = useAuthStore((state) => state.user);
+console.log(user);
   const navigation = [
     {
       name: "Overview",
@@ -168,12 +163,30 @@ export default function DashboardLayout({ children }) {
           {/* User Profile */}
           <div className="p-4 border-t border-white/10">
             <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center font-semibold text-sm">
-                JD
-              </div>
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center font-semibold text-sm text-white">
+  {user?.picture ? (
+    <Image
+    width={200}
+    height={200}
+      src={user?.picture}
+      alt={user?.name}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <span>
+      {user?.name
+        ?.split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()}
+    </span>
+  )}
+</div>
+
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-white truncate">
-                  John Doe
+                  {user?.name}
                 </div>
                 <div className="text-xs text-gray-400 truncate">Free Plan</div>
               </div>
