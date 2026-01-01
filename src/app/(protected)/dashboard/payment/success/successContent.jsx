@@ -3,13 +3,11 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle, ArrowRight, Loader2 } from "lucide-react";
-import { Suspense } from "react";
 
-// 1. Create the content component
+
 export function SuccessContent() {
   const params = useSearchParams();
   const sessionId = params.get("session_id");
-
   return (
     <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center space-y-6">
       {/* Icon Area */}

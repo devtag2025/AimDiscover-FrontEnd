@@ -7,8 +7,6 @@ import {Icons} from "@/utils/StaticData"
 
 function Model3DViewer({ modelData }) {
   const [loadError, setLoadError] = useState(null);
-
-  // Unified Loading/Processing Check
   const isProcessing =
     !modelData ||
     modelData.status === "PENDING" ||
@@ -91,7 +89,6 @@ function Model3DViewer({ modelData }) {
     );
   }
 
-  // Failed State
   if (isFailed) {
     return (
       <div className="w-full h-[500px] bg-[#0A0A0A] rounded-2xl border border-red-500/20 flex items-center justify-center">
@@ -106,7 +103,6 @@ function Model3DViewer({ modelData }) {
     );
   }
 
-  // Ready to Render
   if (isReady) {
     return (
       <div className="relative group">
