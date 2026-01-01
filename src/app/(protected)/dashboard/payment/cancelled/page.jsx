@@ -14,7 +14,6 @@ export default function PaymentCancelled() {
             <XCircle className="w-12 h-12 text-red-500" />
           </div>
         </div>
-
         {/* Text Area */}
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-white">
@@ -24,7 +23,6 @@ export default function PaymentCancelled() {
             The payment process was cancelled. No charges were made to your card.
           </p>
         </div>
-
         {/* Actions */}
         <div className="flex flex-col gap-3 pt-2">
           <Link
