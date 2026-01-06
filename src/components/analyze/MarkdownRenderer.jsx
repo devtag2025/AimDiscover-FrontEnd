@@ -7,12 +7,21 @@ import {
   Check, Copy, ChevronDown, ExternalLink, Hash, 
   Sparkles, FileText, Lightbulb, AlertCircle, Info, 
   TrendingUp, Target, BookOpen, Terminal, 
-  Maximize2, Minimize2, Menu, X
+  Maximize2, Minimize2, Menu, X,
+  Download, Printer, Share2, Loader2
 } from 'lucide-react';
+import { 
+  exportToPDF, 
+  exportToDOCX, 
+  exportToMarkdown, 
+  printReport, 
+  copyShareLink,
+  canExport 
+} from '@/lib/exportUtils';
+import Link from 'next/link';
 
-// ==================== UTILS & HOOKS ====================
+// ==================== HOOKS ====================
 
-// Hook to track active section based on scroll position
 const useScrollSpy = (ids, offset = 100) => {
   const [activeId, setActiveId] = useState("");
 
@@ -82,7 +91,6 @@ const CodeBlock = ({ children, className }) => {
   
   return (
     <div className="group relative my-6 rounded-xl border border-white/10 bg-[#0A0A0E] overflow-hidden shadow-2xl">
-      {/* Mac-style Window Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
@@ -107,7 +115,6 @@ const CodeBlock = ({ children, className }) => {
         </div>
       </div>
       
-      {/* Code Body */}
       <div 
         className={`relative transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-none' : shouldCollapse ? 'max-h-[320px]' : ''}`}
         style={{ overflow: isExpanded ? 'visible' : 'hidden' }}
@@ -127,7 +134,6 @@ const CodeBlock = ({ children, className }) => {
           </pre>
         </div>
         
-        {/* Collapse Gradient Overlay */}
         {!isExpanded && shouldCollapse && (
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#0A0A0E] to-transparent pointer-events-none" />
         )}
@@ -180,6 +186,130 @@ const CollapsibleSection = ({ title, children, isOpen, onToggle, icon: Icon = Fi
   </div>
 );
 
+// ==================== EXPORT ACTIONS COMPONENT ====================
+
+const ExportActions = ({ 
+  content, 
+  title = "Analysis Report",
+  metadata = {},
+  contentElementId = 'markdown-content'
+}) => {
+  const [exportingFormat, setExportingFormat] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleExport = async (format) => {
+    setExportingFormat(format);
+    
+    try {
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `${title.toLowerCase().replace(/\s+/g, '-')}-${timestamp}`;
+      
+      switch (format) {
+        case 'pdf':
+          await exportToPDF(contentElementId, `${filename}.pdf`);
+          break;
+          
+        case 'docx':
+          await exportToDOCX(content, `${filename}.docx`, { 
+            title, 
+            ...metadata,
+            date: new Date().toLocaleDateString()
+          });
+          break;
+          
+        case 'markdown':
+          exportToMarkdown(content, `${filename}.md`);
+          break;
+          
+        case 'print':
+          printReport();
+          break;
+          
+        case 'share':
+          await copyShareLink();
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+          break;
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert(`Export failed: ${error.message}. Please try again.`);
+    } finally {
+      setExportingFormat(null);
+    }
+  };
+
+  const exportOptions = [
+    { 
+      id: 'pdf', 
+      label: 'PDF', 
+      icon: FileText, 
+      className: 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/30',
+      title: 'Download as PDF'
+    },
+    { 
+      id: 'docx', 
+      label: 'DOCX', 
+      icon: FileText, 
+      className: 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border-blue-500/30',
+      title: 'Download as Word Document'
+    },
+    { 
+      id: 'markdown', 
+      label: 'MD', 
+      icon: Download, 
+      className: 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border-purple-500/30',
+      title: 'Download as Markdown'
+    },
+    { 
+      id: 'print', 
+      label: 'Print', 
+      icon: Printer, 
+      className: 'bg-gray-500/10 hover:bg-gray-500/20 text-gray-400 border-gray-500/30',
+      title: 'Print Report'
+    },
+    { 
+      id: 'share', 
+      label: copied ? 'Copied!' : 'Share', 
+      icon: copied ? Check : Share2, 
+      className: 'bg-green-500/10 hover:bg-green-500/20 text-green-400 border-green-500/30',
+      title: 'Copy Share Link'
+    }
+  ];
+
+  return (
+    <div className="flex flex-wrap gap-2 mb-6 pb-4 border-b border-white/5">
+      <div className="flex items-center gap-2 text-xs text-gray-500 mr-auto">
+        <Download className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline">Export Report:</span>
+        <span className="sm:hidden">Export:</span>
+      </div>
+      
+      {exportOptions.map(({ id, label, icon: Icon, className, title: buttonTitle }) => (
+        <button
+          key={id}
+          onClick={() => handleExport(id)}
+          disabled={exportingFormat === id}
+          title={buttonTitle}
+          className={`
+            flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+            border transition-all duration-200
+            disabled:opacity-50 disabled:cursor-not-allowed
+            ${className}
+          `}
+        >
+          {exportingFormat === id ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Icon className="w-3.5 h-3.5" />
+          )}
+          <span>{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+};
+
 // ==================== MAIN COMPONENT ====================
 
 const MarkdownRenderer = ({ 
@@ -188,11 +318,37 @@ const MarkdownRenderer = ({
   className = "",
   showTableOfContents = false,
   collapsibleSections = true,
-  defaultCollapsed = false
+  defaultCollapsed = false,
+  enableExport = true,
+  exportMetadata = {},
+  onReady = null // Callback to pass element ID when ready
 }) => {
   const [sectionStates, setSectionStates] = useState({});
   const [allExpanded, setAllExpanded] = useState(!defaultCollapsed);
   const [mobileTocOpen, setMobileTocOpen] = useState(false);
+  const [exportSupported, setExportSupported] = useState(true);
+  
+  // Stable unique ID for PDF export
+  const contentElementId = useMemo(() => `markdown-content-${Math.random().toString(36).substr(2, 9)}`, []);
+  
+  // Notify parent when component is ready with the element ID
+  useEffect(() => {
+    if (onReady && contentElementId) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        onReady(contentElementId);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [onReady, contentElementId]);
+  
+  // Check export support
+  useEffect(() => {
+    if (enableExport && !canExport()) {
+      console.warn('Export features not fully supported in this browser');
+      setExportSupported(false);
+    }
+  }, [enableExport]);
   
   // Extract headings
   const headings = useMemo(() => {
@@ -210,12 +366,10 @@ const MarkdownRenderer = ({
     return matches;
   }, [content, showTableOfContents]);
 
-  // Scroll Spy to highlight active TOC item
   const activeSectionId = useScrollSpy(headings.map(h => h.id));
 
-  // Initialize Section States
   useEffect(() => {
-    const sections = content.match(/^## (.+)$/gm) || [];
+    const sections = content?.match(/^## (.+)$/gm) || [];
     const initialStates = {};
     sections.forEach(s => {
       const id = s.replace('## ', '').toLowerCase().replace(/[^\w]+/g, '-');
@@ -245,17 +399,12 @@ const MarkdownRenderer = ({
   };
 
   const components = {
-    // Headings
     h1: ({ children }) => <h1 id={String(children).toLowerCase().replace(/[^\w]+/g, '-')} className="scroll-mt-32 text-2xl font-bold text-gray-100 mt-8 mb-6 pb-4 border-b border-white/10">{children}</h1>,
     h2: ({ children }) => !collapsibleSections && <h2 id={String(children).toLowerCase().replace(/[^\w]+/g, '-')} className="scroll-mt-32 text-xl font-bold text-gray-100 mt-8 mb-4">{children}</h2>,
     h3: ({ children }) => <h3 id={String(children).toLowerCase().replace(/[^\w]+/g, '-')} className="scroll-mt-32 text-lg font-semibold text-gray-200 mt-6 mb-3 flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-purple-500"/>{children}</h3>,
-    
-    // Text
     p: ({ children }) => <p className="text-gray-300 leading-7 mb-4 last:mb-0">{children}</p>,
     strong: ({ children }) => <strong className="font-semibold text-white bg-white/5 px-1 rounded">{children}</strong>,
     em: ({ children }) => <em className="text-purple-300 not-italic">{children}</em>,
-    
-    // Lists
     ul: ({ children }) => <ul className="space-y-2 mb-6 ml-1">{children}</ul>,
     ol: ({ children }) => <ol className="space-y-2 mb-6 ml-1 list-decimal list-inside text-gray-400">{children}</ol>,
     li: ({ children }) => (
@@ -264,8 +413,6 @@ const MarkdownRenderer = ({
         <span className="leading-7">{children}</span>
       </li>
     ),
-    
-    // Block Elements
     blockquote: ({ children }) => (
       <blockquote className="relative my-6 pl-6 py-1 border-l-2 border-purple-500 bg-gradient-to-r from-purple-500/10 to-transparent rounded-r-lg">
         <div className="text-gray-300 italic">{children}</div>
@@ -274,8 +421,6 @@ const MarkdownRenderer = ({
     code: ({ inline, className, children }) => inline 
       ? <code className="px-1.5 py-0.5 rounded-md bg-white/10 text-purple-200 text-xs font-mono border border-white/10">{children}</code>
       : <CodeBlock className={className}>{children}</CodeBlock>,
-    
-    // Links & Tables
     a: ({ href, children }) => (
       <a href={href} target="_blank" rel="noreferrer" className="text-purple-400 hover:text-purple-300 underline decoration-purple-500/30 underline-offset-4 transition-all inline-flex items-center gap-1">
         {children} <ExternalLink className="w-3 h-3 opacity-50" />
@@ -296,7 +441,6 @@ const MarkdownRenderer = ({
   const renderContent = () => {
     if (!collapsibleSections) return <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>{content}</ReactMarkdown>;
 
-    // Split content by H2
     const parts = content.split(/(?=^## )/gm);
     
     return parts.map((part, i) => {
@@ -320,7 +464,6 @@ const MarkdownRenderer = ({
           </CollapsibleSection>
         );
       }
-      // Content before the first H2
       if (part.trim()) {
         return (
           <div key={i} className="mb-8 prose-intro">
@@ -334,14 +477,11 @@ const MarkdownRenderer = ({
 
   return (
     <div className={`w-full ${className}`}>
-      {/* Container - Width constrained but responsive */}
       <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-purple-500/30 via-white/10 to-transparent shadow-2xl overflow-hidden w-full">
         
-        {/* Background Effects */}
         <div className="absolute inset-0 bg-[#050509] rounded-2xl" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(168,85,247,0.15),rgba(255,255,255,0))] pointer-events-none" />
         
-        {/* Main Content Card */}
         <div className="relative min-h-[400px] w-full">
           
           {/* Header */}
@@ -360,7 +500,6 @@ const MarkdownRenderer = ({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Mobile TOC Toggle */}
               {showTableOfContents && headings.length > 0 && (
                 <button
                   onClick={() => setMobileTocOpen(!mobileTocOpen)}
@@ -370,7 +509,6 @@ const MarkdownRenderer = ({
                 </button>
               )}
               
-              {/* Collapse All (Desktop) */}
               {collapsibleSections && (
                 <button
                   onClick={toggleAll}
@@ -385,27 +523,25 @@ const MarkdownRenderer = ({
             </div>
           </div>
 
-          {/* Mobile TOC Dropdown */}
           {showTableOfContents && mobileTocOpen && (
             <div className="xl:hidden border-b border-white/10 bg-[#0A0A0E] px-4 py-3 animate-in slide-in-from-top-2">
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Jump to section</p>
               <nav className="space-y-1 max-h-48 overflow-y-auto">
                 {headings.map((h, i) => (
-                  <a
+                  <Link
                     key={i}
                     href={`#${h.id}`}
                     onClick={() => setMobileTocOpen(false)}
                     className="block py-2 px-3 rounded-lg text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors truncate"
                   >
                     {h.text}
-                  </a>
+                  </Link>
                 ))}
               </nav>
             </div>
           )}
 
           <div className="flex flex-col xl:flex-row">
-            {/* Desktop Sidebar TOC */}
             {showTableOfContents && headings.length > 0 && (
               <div className="hidden xl:block w-64 flex-shrink-0 border-r border-white/5 bg-black/20">
                 <div className="sticky top-20 p-5 max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
@@ -413,13 +549,12 @@ const MarkdownRenderer = ({
                     <BookOpen className="w-3 h-3" /> Contents
                   </h3>
                   <nav className="space-y-0.5 relative">
-                    {/* Vertical line track */}
                     <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-white/5 ml-3" />
                     
                     {headings.map((h, i) => {
                       const isActive = activeSectionId === h.id;
                       return (
-                        <a
+                        <Link
                           key={i} 
                           href={`#${h.id}`}
                           className={`
@@ -432,7 +567,7 @@ const MarkdownRenderer = ({
                           `}
                         >
                           <span className="truncate">{h.text}</span>
-                        </a>
+                        </Link>
                       );
                     })}
                   </nav>
@@ -441,8 +576,25 @@ const MarkdownRenderer = ({
             )}
 
             {/* Markdown Content Area */}
-            <div className="flex-1 min-w-0"> {/* min-w-0 prevents flex items from overflowing */}
-              <div className="px-4 py-6 sm:px-8 sm:py-8 max-w-full">
+            <div className="flex-1 min-w-0">
+              {/* Export Actions */}
+              {enableExport && exportSupported && (
+                <div className="px-4 py-4 sm:px-8 sm:pt-6">
+                  <ExportActions 
+                    content={content}
+                    title={title}
+                    metadata={exportMetadata}
+                    contentElementId={contentElementId}
+                  />
+                </div>
+              )}
+              
+              {/* Content with ID for PDF export - THIS IS THE KEY PART */}
+              <div 
+                id={contentElementId} 
+                className="px-4 py-6 sm:px-8 sm:py-8 max-w-full pdf-export-content"
+                data-pdf-export="true"
+              >
                 {renderContent()}
               </div>
             </div>

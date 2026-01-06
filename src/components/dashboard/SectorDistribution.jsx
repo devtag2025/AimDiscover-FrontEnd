@@ -1,27 +1,31 @@
-import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
+import {
+  PieChart as RePieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as ReTooltip,
+} from "recharts";
 import { LayoutGrid } from "lucide-react";
 
-
-
 const CHART_COLORS = [
-  "hsl(270, 70%, 60%)",   // Purple
-  "hsl(160, 70%, 45%)",   // Emerald
-  "hsl(200, 80%, 55%)",   // Sky
-  "hsl(35, 90%, 55%)",    // Amber
-  "hsl(340, 80%, 60%)",   // Pink
-  "hsl(25, 90%, 55%)",    // Orange
-  "hsl(0, 70%, 55%)",     // Red
-  "hsl(280, 70%, 55%)",   // Violet
+  "hsl(270, 70%, 60%)", // Purple
+  "hsl(160, 70%, 45%)", // Emerald
+  "hsl(200, 80%, 55%)", // Sky
+  "hsl(35, 90%, 55%)", // Amber
+  "hsl(340, 80%, 60%)", // Pink
+  "hsl(25, 90%, 55%)", // Orange
+  "hsl(0, 70%, 55%)", // Red
+  "hsl(280, 70%, 55%)", // Violet
 ];
 
 export default function SectorDistribution({ data, activeFilter, onFilter }) {
   if (!data.length) return null;
 
   return (
-    <div className="glass-card p-4 animate-fade-in">
-      <div className="section-title mb-4">
-        <LayoutGrid className="w-4 h-4 text-primary" />
-        Sector Distribution
+    <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <LayoutGrid className="w-4 h-4 text-purple-400" />
+        <h2 className="text-sm font-medium text-white">Categories</h2>
       </div>
 
       <div className="flex items-center gap-4">
@@ -32,8 +36,8 @@ export default function SectorDistribution({ data, activeFilter, onFilter }) {
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={25}
-                outerRadius={40}
+                innerRadius={28}
+                outerRadius={42}
                 paddingAngle={2}
                 dataKey="value"
               >
@@ -44,7 +48,10 @@ export default function SectorDistribution({ data, activeFilter, onFilter }) {
                     stroke="transparent"
                     style={{
                       cursor: onFilter ? "pointer" : "default",
-                      opacity: activeFilter?.type === "category" && activeFilter?.value !== entry.name ? 0.4 : 1,
+                      opacity:
+                        activeFilter?.type === "category" && activeFilter?.value !== entry.name
+                          ? 0.3
+                          : 1,
                     }}
                     onClick={() => onFilter?.("category", entry.name)}
                   />
@@ -52,26 +59,28 @@ export default function SectorDistribution({ data, activeFilter, onFilter }) {
               </Pie>
               <ReTooltip
                 contentStyle={{
-                  backgroundColor: "hsl(222 47% 8%)",
-                  border: "1px solid hsl(217 33% 15%)",
-                  borderRadius: "8px",
+                  backgroundColor: "rgb(17 24 39)",
+                  border: "1px solid rgb(31 41 55)",
+                  borderRadius: "6px",
                   fontSize: "12px",
+                  color: "rgb(229 231 235)",
                 }}
               />
             </RePieChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="flex-1 space-y-1 max-h-24 overflow-y-auto scrollbar-thin">
+        <div className="flex-1 space-y-1.5">
           {data.slice(0, 5).map((entry, index) => (
             <button
               key={entry.name}
               onClick={() => onFilter?.("category", entry.name)}
               className={`
-                w-full flex items-center gap-2 text-left text-xs p-1.5 rounded transition-all
-                ${activeFilter?.type === "category" && activeFilter?.value === entry.name
-                  ? "bg-primary/20 text-primary"
-                  : "hover:bg-secondary text-muted-foreground hover:text-foreground"
+                w-full flex items-center gap-2 text-left text-xs px-2 py-1.5 rounded-md transition-colors
+                ${
+                  activeFilter?.type === "category" && activeFilter?.value === entry.name
+                    ? "bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                    : "hover:bg-gray-800 text-gray-400 hover:text-gray-300"
                 }
               `}
             >
@@ -80,7 +89,7 @@ export default function SectorDistribution({ data, activeFilter, onFilter }) {
                 style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
               />
               <span className="truncate flex-1">{entry.name}</span>
-              <span className="font-mono">{entry.value}</span>
+              <span className="font-mono text-xs">{entry.value}</span>
             </button>
           ))}
         </div>

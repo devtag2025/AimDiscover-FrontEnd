@@ -47,7 +47,8 @@
 ========================================= */
 :root {
 
-  --border: oklch(0.922 0 0);
+  --border: 
+  ch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
@@ -278,5 +279,276 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+
+/* app/globals.css - Add at the end */
+
+/* ==================== ENHANCED PRINT STYLES ==================== */
+/* Add this to your app/globals.css file */
+
+@media print {
+  /* ==================== HIDE EVERYTHING EXCEPT CONTENT ==================== */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* ==================== SHOW ONLY MARKDOWN CONTENT ==================== */
+  #markdown-content,
+  #markdown-content *,
+  [id^="markdown-content"],
+  [id^="markdown-content"] * {
+    visibility: visible;
+  }
+  
+  /* Position markdown content at top left */
+  #markdown-content,
+  [id^="markdown-content"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 20mm !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  /* ==================== HIDE UI ELEMENTS ==================== */
+  header,
+  nav,
+  button,
+  .no-print,
+  [class*="export"],
+  [class*="copy"],
+  [class*="collapse"],
+  [class*="mobile-toc"],
+  [class*="gradient"],
+  [aria-label*="Copy"],
+  [aria-label*="collapse"] {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* ==================== RESET TO PRINT-FRIENDLY ==================== */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* ==================== TYPOGRAPHY ==================== */
+  h1 {
+    font-size: 24pt;
+    font-weight: bold;
+    color: #000000 !important;
+    margin-top: 0;
+    margin-bottom: 16pt;
+    page-break-after: avoid;
+  }
+  
+  h2 {
+    font-size: 18pt;
+    font-weight: bold;
+    color: #000000 !important;
+    margin-top: 16pt;
+    margin-bottom: 12pt;
+    page-break-after: avoid;
+    border-bottom: 2pt solid #cccccc;
+    padding-bottom: 8pt;
+  }
+  
+  h3 {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #333333 !important;
+    margin-top: 12pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+  
+  h4, h5, h6 {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #333333 !important;
+    margin-top: 10pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  
+  p {
+    color: #000000 !important;
+    margin-bottom: 10pt;
+    text-align: justify;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* ==================== LISTS ==================== */
+  ul, ol {
+    margin: 10pt 0;
+    padding-left: 20pt;
+  }
+  
+  li {
+    color: #000000 !important;
+    margin-bottom: 6pt;
+    page-break-inside: avoid;
+  }
+  
+  /* Remove bullet point decorations */
+  li::marker {
+    color: #000000;
+  }
+  
+  /* ==================== CODE BLOCKS ==================== */
+  pre, code {
+    background: #f5f5f5 !important;
+    border: 1pt solid #dddddd !important;
+    color: #000000 !important;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+  
+  pre {
+    padding: 10pt;
+    margin: 10pt 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  code {
+    padding: 2pt 4pt;
+  }
+  
+  /* ==================== TABLES ==================== */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12pt 0;
+    page-break-inside: avoid;
+  }
+  
+  table, th, td {
+    border: 1pt solid #333333 !important;
+  }
+  
+  th {
+    background: #f0f0f0 !important;
+    color: #000000 !important;
+    font-weight: bold;
+    padding: 8pt;
+    text-align: left;
+  }
+  
+  td {
+    color: #000000 !important;
+    padding: 8pt;
+  }
+  
+  /* ==================== BLOCKQUOTES ==================== */
+  blockquote {
+    border-left: 3pt solid #cccccc !important;
+    margin: 10pt 0;
+    padding-left: 12pt;
+    color: #333333 !important;
+    font-style: italic;
+    page-break-inside: avoid;
+  }
+  
+  /* ==================== LINKS ==================== */
+  a {
+    color: #0066cc !important;
+    text-decoration: underline;
+  }
+  
+  /* Show URL after links (optional - remove if too cluttered) */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #666666;
+  }
+  
+  /* Don't show URLs for anchor links */
+  a[href^="#"]:after {
+    content: "";
+  }
+  
+  /* ==================== REMOVE ALL DECORATIONS ==================== */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    background-image: none !important;
+    animation: none !important;
+    transition: none !important;
+    border-radius: 0 !important;
+    transform: none !important;
+  }
+  
+  /* ==================== PAGE BREAKS ==================== */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+  
+  pre, blockquote, table, figure, img {
+    page-break-inside: avoid;
+  }
+  
+  /* Page break utility classes */
+  .page-break-before {
+    page-break-before: always;
+  }
+  
+  .page-break-after {
+    page-break-after: always;
+  }
+  
+  .page-break-avoid {
+    page-break-inside: avoid;
+  }
+  
+  /* ==================== IMAGES ==================== */
+  img {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+  
+  /* ==================== HEADER/FOOTER ==================== */
+  @page {
+    margin: 20mm;
+    
+    @top-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 9pt;
+      color: #666666;
+    }
+    
+    @bottom-left {
+      content: "Generated via AimDiscover";
+      font-size: 9pt;
+      color: #666666;
+    }
+    
+    @bottom-right {
+      content: date(iso);
+      font-size: 9pt;
+      color: #666666;
+    }
+  }
+  
+  /* First page header (no page numbers) */
+  @page :first {
+    @top-right {
+      content: "";
+    }
   }
 }

@@ -298,6 +298,15 @@ export default function AnalyzePage() {
     setPollingInterval(intervalId);
   };
 
+  // ============================================
+  // NEW: Helper to get category name from ID
+  // ============================================
+  const getCategoryName = (categoryId) => {
+    if (!categoryId || !categories.length) return "Unknown Category";
+    const category = categories.find(cat => cat._id === categoryId);
+    return category?.name || "Unknown Category";
+  };
+
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-purple-500/30">
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#050505] to-[#050505] pointer-events-none" />
@@ -341,13 +350,27 @@ export default function AnalyzePage() {
           {analysisResult && (
             <section className="space-y-6">
               
-              {/* Insights Card with Action Buttons */}
+              {/* Insights Card with Action Buttons - UPDATED WITH EXPORT METADATA */}
               <InsightsCard
                 insights={analysisResult.insights}
                 isAnalyzing={isAnalyzing}
                 onGenerate3D={handleGenerate3D}
                 onRefine={() => setShowChatInput(true)}
                 conversationHistory={conversationHistory}
+                enableExport={true}
+                exportMetadata={{
+                  category: getCategoryName(baseConfig?.categoryId),
+                  region: baseConfig?.region || "Global",
+                  productName: baseConfig?.productName || "N/A",
+                  date: new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }),
+                  refined: conversationHistory.length > 1 ? 
+                    `Refined ${Math.floor((conversationHistory.length - 1) / 2)} time(s)` : 
+                    "Initial analysis"
+                }}
               />
 
               {/* Chat Interface (shows after user clicks "Refine") */}

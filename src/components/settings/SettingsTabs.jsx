@@ -27,4 +27,22 @@ const SettingsTabs = ({ activeTab, setActiveTab }) => (
   </div>
 );
 
+export function TabButton({ isActive, onClick, icon: Icon, label }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all
+        ${isActive 
+          ? "bg-purple-600 text-white" 
+          : "text-gray-400 hover:bg-gray-800/50 hover:text-gray-200"
+        }
+      `}
+    >
+      <Icon className="w-4 h-4" />
+      <span>{label}</span>
+    </button>
+  );
+}
+
 export default SettingsTabs
